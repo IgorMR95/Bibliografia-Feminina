@@ -53,24 +53,40 @@ export const Dashboards = () => {
   );
 
   const kpis = data.kpis || {};
-  const ufData       = toChart(data.por_uf       || data.charts?.uf       || []);
-  const tituloData   = toChart(data.por_titulacao || data.charts?.titulo   || []);
-  const atuacaoData  = toChart(data.por_atuacao   || data.charts?.atuacao  || []).slice(0, 8);
-  const assocData    = toChart(data.por_associacao || data.charts?.associacao || []);
-  const prodTipoData = toChart(data.por_tipo_obra  || data.charts?.producao_tipo || []);
-  const prodAreaData = toChart(data.por_area       || data.charts?.producao_area || []);
+  const total = kpis.total ?? 0;
+  const totalIbdp = kpis.total_ibdp ?? 0;
+  const totalAbep = kpis.total_abep ?? 0;
+  const totalDocentes = kpis.total_docentes ?? 0;
+  const totalRanking = kpis.total_ranking_40 ?? 0;
+  const totalDoutoras = kpis.total_doutoras ?? 0;
+  const totalMestres = kpis.total_mestres ?? 0;
+  const totalEspec = kpis.total_especialistas ?? 0;
+
+  const ufData       = toChart(data.por_uf        || []);
+  const tituloData   = toChart(data.por_titulacao  || []);
+  const atuacaoData  = toChart(data.por_atuacao    || []).slice(0, 8);
+  const prodTipoData = toChart(data.por_tipo_obra  || []);
+  const prodAreaData = toChart(data.por_area        || []);
+
+  // Distribuição de vínculos: IBDP, ABEP, Docentes, Ranking
+  const assocData = [
+    { name: "IBDP", value: totalIbdp },
+    { name: "ABEP", value: totalAbep },
+    { name: "Docentes", value: totalDocentes },
+    { name: "Ranking 40+", value: totalRanking },
+  ].filter(d => d.value > 0);
 
   const colors = ["#863F56", "#C18C3F", "#4A6741", "#5C5C7A", "#7A7A76"];
 
   const mainKPIs = [
-    { title: "Total Mapeado",   value: kpis.total ?? 0,              sub: "Processualistas" },
-    { title: "Membros IBDP",    value: kpis.ibdp ?? 0,               sub: `${kpis.total ? Math.round(((kpis.ibdp ?? 0) / kpis.total) * 100) : 0}% da base` },
-    { title: "Membros ABEP",    value: kpis.abep ?? 0,               sub: `${kpis.total ? Math.round(((kpis.abep ?? 0) / kpis.total) * 100) : 0}% da base` },
-    { title: "Docentes Ativas", value: kpis.docentes ?? 0,           sub: "Lecionam em IES" },
-    { title: "Ranking 40+",     value: kpis.ranking_total ?? kpis.rankingTotal ?? 0, sub: `${kpis.total_instituicoes ?? kpis.totalInstituicoes ?? 0} Instituições Totais` },
-    { title: "Votos Ranking",   value: kpis.ranking_votos ?? kpis.rankingVotos ?? 0, sub: "IES no Ranking 40+" },
-    { title: "Doutoras",        value: kpis.doutoras ?? 0,           sub: "Título de Doutorado" },
-    { title: "Obras Mapeadas",  value: kpis.total_producao ?? kpis.totalProducao ?? 0, sub: "Desde 2015" },
+    { title: "Total Mapeado",   value: total,         sub: "Processualistas" },
+    { title: "Membros IBDP",    value: totalIbdp,     sub: `${total ? Math.round((totalIbdp / total) * 100) : 0}% da base` },
+    { title: "Membros ABEP",    value: totalAbep,     sub: `${total ? Math.round((totalAbep / total) * 100) : 0}% da base` },
+    { title: "Docentes Ativas", value: totalDocentes, sub: "Lecionam em IES" },
+    { title: "No Ranking 40+",  value: totalRanking,  sub: "IES avaliadas no ranking" },
+    { title: "Doutoras",        value: totalDoutoras, sub: "Título de Doutorado" },
+    { title: "Mestres",         value: totalMestres,  sub: "Título de Mestrado" },
+    { title: "Especialistas",   value: totalEspec,    sub: "Especialização" },
   ];
 
   return (
@@ -139,7 +155,7 @@ export const Dashboards = () => {
         </div>
 
         <div className="md:col-span-4 bg-white p-6 rounded-2xl border border-[var(--border)] shadow-sm flex flex-col">
-          <h3 className="font-serif italic text-xl text-[var(--text-main)] mb-6">Vínculos Institucionais</h3>
+          <h3 className="font-serif italic text-xl text-[var(--text-main)] mb-6">Distribuição de Vínculos</h3>
           <div className="flex-1 min-h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>

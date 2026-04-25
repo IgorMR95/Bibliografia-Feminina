@@ -62,9 +62,16 @@ export const BatchImportTab = () => {
     xlsx.utils.book_append_sheet(wb, ws1, "Processualistas");
 
     const ws2 = xlsx.utils.aoa_to_sheet([...prodHeaders, ...prodExample]);
-    xlsx.utils.book_append_sheet(wb, ws2, "Produções Bibliográficas");
+    xlsx.utils.book_append_sheet(wb, ws2, "Producoes");
 
-    xlsx.writeFile(wb, "modelo_importacao.xlsx");
+    const wbout = xlsx.write(wb, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([wbout], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "modelo_importacao.xlsx";
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleImport = async (preview = false) => {
