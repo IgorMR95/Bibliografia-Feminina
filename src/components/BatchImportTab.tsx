@@ -42,6 +42,31 @@ export const BatchImportTab = () => {
     formato: row["Formato"] || row["formato"] || "ELETRONICA",
   });
 
+  const downloadTemplate = () => {
+    const assocHeaders = [
+      ["Nome", "Email", "UF", "IBDP", "ABEP", "Link Lattes", "Título/Formação", "Atuação Profissional", "Leciona", "Tipo Docência", "Instituições de Ensino", "Título Mestrado", "Título Doutorado", "Título Livre-Docência"]
+    ];
+    const assocExample = [
+      ["Maria Silva", "maria@exemplo.com", "SP", "Sim", "Não", "http://lattes.cnpq.br/...", "Doutora", "Advocacia", "Sim", "Pós-graduação", "USP\nUNICAMP", "Direito Processual", "Acesso à Justiça e Processo Civil", ""]
+    ];
+    const prodHeaders = [
+      ["Nome", "Tipo", "Citação Completa", "Ano", "Área"]
+    ];
+    const prodExample = [
+      ["Maria Silva", "Artigo", "SILVA, M. Título do Artigo. Revista X, v. 1, n. 1, 2024.", "2024", "P. Civil"]
+    ];
+
+    const wb = xlsx.utils.book_new();
+
+    const ws1 = xlsx.utils.aoa_to_sheet([...assocHeaders, ...assocExample]);
+    xlsx.utils.book_append_sheet(wb, ws1, "Processualistas");
+
+    const ws2 = xlsx.utils.aoa_to_sheet([...prodHeaders, ...prodExample]);
+    xlsx.utils.book_append_sheet(wb, ws2, "Produções Bibliográficas");
+
+    xlsx.writeFile(wb, "modelo_importacao.xlsx");
+  };
+
   const handleImport = async (preview = false) => {
     if (!file) return;
     setUploading(true);
@@ -98,7 +123,7 @@ export const BatchImportTab = () => {
               </ul>
             </div>
             <div className="flex gap-4">
-              <button className="flex-1 p-3 border border-[var(--border)] rounded-lg text-xs font-bold hover:bg-[var(--row-hover)] transition flex items-center justify-center gap-2">
+              <button onClick={downloadTemplate} className="flex-1 p-3 border border-[var(--border)] rounded-lg text-xs font-bold hover:bg-[var(--row-hover)] transition flex items-center justify-center gap-2">
                 <FileText className="w-4 h-4" />
                 Baixar Modelo (.xlsx)
               </button>

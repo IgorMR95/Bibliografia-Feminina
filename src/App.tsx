@@ -16,6 +16,7 @@ import { DetalheAssociada } from "./pages/DetalheAssociada";
 import { Home } from "./pages/Home";
 import { Sobre } from "./pages/Sobre";
 import { Idealizadoras } from "./pages/Idealizadoras";
+import { AdminCrud } from "./pages/AdminCrud";
 
 function ProtectedRoute({ children, reqAdmin = false }: { children: ReactNode; reqAdmin?: boolean }) {
   const { user, loading } = useAuth();
@@ -40,6 +41,7 @@ function AppRoutes() {
         <Route path="dashboards" element={<Dashboards />} />
         <Route path="alimentacao" element={<ProtectedRoute><Alimentacao /></ProtectedRoute>} />
         <Route path="admin" element={<ProtectedRoute reqAdmin><Administracao /></ProtectedRoute>} />
+        <Route path="admin/dados" element={<ProtectedRoute reqAdmin><AdminCrud /></ProtectedRoute>} />
       </Route>
     </Routes>
   );

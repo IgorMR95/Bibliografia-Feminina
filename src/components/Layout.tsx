@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/AuthContext";
-import { Search, LayoutDashboard, Database, Shield, LogOut, Users, LogIn, Home as HomeIcon, BookMarked, Menu, X } from "lucide-react";
+import { Search, LayoutDashboard, Database, Shield, LogOut, Users, LogIn, Home as HomeIcon, BookMarked, Menu, X, TableProperties } from "lucide-react";
 import { cn } from "../lib/utils";
 import { useState } from "react";
 
@@ -24,6 +24,7 @@ export const Layout = () => {
 
   if (user?.role === "ADMIN") {
     navigation.push({ name: "Administração", href: "/admin", icon: Shield });
+    navigation.push({ name: "Gestão de Dados", href: "/admin/dados", icon: TableProperties });
   }
 
   const handleLogout = () => {
