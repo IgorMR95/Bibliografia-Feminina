@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../lib/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { api } from "../lib/api";
 
 export const Login = () => {
   const [email, setEmail] = useState("");
@@ -13,11 +12,10 @@ export const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await api.post("/auth/login", { email, password });
-      login(res.data.token, res.data.user);
+      await login(email, password);
       navigate("/");
     } catch (err: any) {
-      setError(err.response?.data?.error || "Erro no login");
+      setError(err.message || "Erro no login");
     }
   };
 
@@ -28,10 +26,10 @@ export const Login = () => {
           <h2 className="text-3xl font-serif italic text-[var(--accent)] tracking-tight">Bem-vindo</h2>
           <p className="text-[var(--text-muted)] mt-2">Faça o login para entrar no sistema</p>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && <div className="p-3 text-sm text-[var(--error)] bg-white border border-[var(--error)] rounded-md">{error}</div>}
-          
+
           <div className="space-y-4">
             <div>
               <label className="block text-[10px] uppercase tracking-wider text-[var(--text-muted)] mb-1">Email</label>
@@ -54,7 +52,7 @@ export const Login = () => {
               />
             </div>
           </div>
-          
+
           <button
             type="submit"
             className="w-full py-2.5 px-4 text-white font-semibold bg-[var(--accent)] hover:bg-[var(--accent-hover)] rounded-lg shadow-sm transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-[var(--accent)]"

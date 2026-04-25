@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { api } from "../lib/api";
+import { supabase } from "../lib/supabase";
 
 interface ProducaoFormProps {
   associadaId?: string;
@@ -9,7 +9,7 @@ interface ProducaoFormProps {
 }
 
 export const ProducaoForm = ({ associadaId, onSuccess, initialData }: ProducaoFormProps) => {
-  const { register, handleSubmit, reset, watch, setValue } = useForm({
+  const { register, handleSubmit, reset, watch } = useForm({
     defaultValues: initialData || {
       formato: "ELETRONICA",
       acesso_eletronica: "PUBLICA",
@@ -25,9 +25,8 @@ export const ProducaoForm = ({ associadaId, onSuccess, initialData }: ProducaoFo
 
   useEffect(() => {
     if (!associadaId && !initialData) {
-      api.get("/associadas", { params: { limit: 1000 } })
-        .then(res => setAssociadas(res.data.data))
-        .catch(console.error);
+      supabase.from("associadas").select("id, nome").is("deletado_em", null).order("nome").limit(1000)
+        .then(({ data }) => setAssociadas(data || []));
     }
   }, [associadaId, initialData]);
 
@@ -36,18 +35,23 @@ export const ProducaoForm = ({ associadaId, onSuccess, initialData }: ProducaoFo
     try {
       const payload = { ...data };
       if (associadaId) payload.associada_id = associadaId;
-      
+
+      // Coerce numeric field
+      if (payload.ano_publicacao) payload.ano_publicacao = Number(payload.ano_publicacao);
+
+      let error;
       if (initialData?.id) {
-        await api.put(`/producao/${initialData.id}`, payload);
+        ({ error } = await supabase.from("producoes_bibliograficas").update(payload).eq("id", initialData.id));
       } else {
-        await api.post("/producao", payload);
+        ({ error } = await supabase.from("producoes_bibliograficas").insert(payload));
       }
-      
+      if (error) throw error;
+
       alert("Produção bibliográfica salva com sucesso!");
       if (!initialData) reset();
       if (onSuccess) onSuccess();
-    } catch {
-      alert("Erro ao salvar produção");
+    } catch (err: any) {
+      alert("Erro ao salvar produção: " + (err.message || ""));
     } finally {
       setLoading(false);
     }
@@ -61,7 +65,7 @@ export const ProducaoForm = ({ associadaId, onSuccess, initialData }: ProducaoFo
             <label className="block text-xs font-bold text-[var(--text-muted)] mb-1">Processualista *</label>
             <select required {...register("associada_id")} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-1 focus:ring-[var(--accent)]">
               <option value="">Selecione a processualista...</option>
-              {associadas.map(a => (
+              {associadas.map((a: any) => (
                 <option key={a.id} value={a.id}>{a.nome}</option>
               ))}
             </select>
@@ -71,23 +75,23 @@ export const ProducaoForm = ({ associadaId, onSuccess, initialData }: ProducaoFo
         <div>
           <label className="block text-xs font-bold text-[var(--text-muted)] mb-1">Tipo de Obra *</label>
           <select required {...register("tipo_obra")} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-1 focus:ring-[var(--accent)]">
-            <option>Artigo</option>
-            <option>Livro</option>
-            <option>Capítulo de Livro</option>
-            <option>Anais de Eventos</option>
-            <option>Coluna em Jornais e Sites</option>
+            <option value="Artigo">Artigo</option>
+            <option value="Livro">Livro</option>
+            <option value="Capitulo de Livro">Capítulo de Livro</option>
+            <option value="Anais de Eventos">Anais de Eventos</option>
+            <option value="Coluna em Jornais e Sites">Coluna em Jornais e Sites</option>
           </select>
         </div>
 
         <div>
           <label className="block text-xs font-bold text-[var(--text-muted)] mb-1">Área do Processo *</label>
           <select required {...register("area_processo")} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-1 focus:ring-[var(--accent)]">
-            <option>P. Civil</option>
-            <option>P. Penal</option>
-            <option>P. Trabalhista</option>
-            <option>P. Tributário</option>
-            <option>P. Constitucional</option>
-            <option>Outros</option>
+            <option value="P. Civil">P. Civil</option>
+            <option value="P. Penal">P. Penal</option>
+            <option value="P. Trabalhista">P. Trabalhista</option>
+            <option value="P. Tributario">P. Tributário</option>
+            <option value="P. Constitucional">P. Constitucional</option>
+            <option value="Outros">Outros</option>
           </select>
         </div>
 
@@ -104,8 +108,8 @@ export const ProducaoForm = ({ associadaId, onSuccess, initialData }: ProducaoFo
         <div>
           <label className="block text-xs font-bold text-[var(--text-muted)] mb-1">Obra física ou eletrônica? *</label>
           <select required {...register("formato")} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-1 focus:ring-[var(--accent)]">
-             <option value="FISICA">Física</option>
-             <option value="ELETRONICA">Eletrônica</option>
+            <option value="FISICA">Física</option>
+            <option value="ELETRONICA">Eletrônica</option>
           </select>
         </div>
 
@@ -113,8 +117,8 @@ export const ProducaoForm = ({ associadaId, onSuccess, initialData }: ProducaoFo
           <div>
             <label className="block text-xs font-bold text-[var(--text-muted)] mb-1">Acesso eletrônico? *</label>
             <select required {...register("acesso_eletronica")} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-1 focus:ring-[var(--accent)]">
-               <option value="PUBLICA">Pública</option>
-               <option value="PROTEGIDA">Protegida</option>
+              <option value="PUBLICA">Pública</option>
+              <option value="PROTEGIDA">Protegida</option>
             </select>
           </div>
         )}
