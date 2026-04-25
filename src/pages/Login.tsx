@@ -22,7 +22,7 @@ export const Login = () => {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center bg-[var(--bg)]">
+    <div className="flex h-screen flex-col items-center justify-center bg-[var(--bg)] relative">
       <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-xl shadow-sm border border-[var(--border)]">
         <div className="text-center">
           <h2 className="text-3xl font-serif italic text-[var(--accent)] tracking-tight">Bem-vindo</h2>
@@ -62,6 +62,12 @@ export const Login = () => {
             Entrar
           </button>
         </form>
+      </div>
+
+      <div className="absolute bottom-8 text-center w-full">
+        <p className="text-sm text-[var(--text-muted)]">
+          Desenvolvido por Igor Moraes Rocha, 2026
+        </p>
       </div>
     </div>
   );

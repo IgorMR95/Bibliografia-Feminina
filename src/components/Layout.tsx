@@ -172,6 +172,15 @@ export const Layout = () => {
         <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pb-12 flex-1">
           <Outlet />
         </div>
+        
+        {/* Footer */}
+        <footer className="border-t border-[var(--border)] py-8 mt-auto">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p className="text-sm text-[var(--text-muted)]">
+              Desenvolvido por Igor Moraes Rocha, 2026
+            </p>
+          </div>
+        </footer>
       </main>
     </div>
   );
