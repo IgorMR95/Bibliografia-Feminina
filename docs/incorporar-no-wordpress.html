@@ -1,13 +1,42 @@
 <!--
   Bibliografia Processual Feminina — incorporação na página do WordPress (USP)
 
-  COMO USAR
-  1. No WordPress, crie/edite a página que vai receber o sistema.
-  2. Escolha um layout de largura total (no Elementor: Configurações da
-     página > Layout > "Largura total" / "Elementor Canvas" se disponível).
-  3. Adicione um widget "HTML" (Elementor) ou um bloco "HTML personalizado"
-     (editor padrão) e cole TUDO o que está abaixo.
-  4. Publique.
+  ===================================================================
+  PASSO 1 — deixar a página em branco (sem menu, cabeçalho e rodapé)
+  ===================================================================
+
+  CAMINHO A — Elementor Canvas (preferível)
+    1. Abra a página com "Editar com Elementor".
+    2. No canto INFERIOR ESQUERDO do painel, clique na engrenagem (⚙)
+       — é "Configurações da página", não confundir com o menu ☰ do topo.
+    3. Aba "Geral" > campo "Modelo de página" (ou "Page Layout").
+    4. Escolha "Elementor Tela em Branco" / "Elementor Canvas".
+       - "Elementor Canvas"    = sem cabeçalho, menu e rodapé  <-- use este
+       - "Elementor Full Width" = largura total, MAS mantém o menu do tema
+       - "Padrão"               = o do tema, com menu e barra lateral
+    5. Atualize e recarregue a página pública.
+
+    Como conferir se pegou: veja o código-fonte da página publicada. A tag
+    <body> deve conter "elementor-template-canvas". Se ainda aparecer
+    "page-template-default", o Canvas não foi aplicado.
+
+  CAMINHO B — editor clássico
+    Se a página não estiver no Elementor: na barra lateral direita do
+    editor, painel "Atributos da página" > "Modelo", escolha uma opção de
+    largura total / sem barra lateral que o tema ofereça.
+
+  CAMINHO C — o Canvas não aparece na lista
+    Acontece em multisite quando o administrador da rede restringe os
+    modelos. Nesse caso NÃO é preciso mudar o modelo: descomente o bloco
+    <style> logo abaixo do iframe, que esconde cabeçalho, menu, barra
+    lateral e rodapé apenas nesta página, usando os seletores do tema
+    USP_id (#masthead, #navbar, #colophon, #secondary).
+
+  ===================================================================
+  PASSO 2 — colar este código
+  ===================================================================
+    Adicione um widget "HTML" (Elementor) ou um bloco "HTML personalizado"
+    (editor padrão) e cole TUDO o que está abaixo. Depois publique.
 
   O que este código faz além de mostrar a página:
   - Ajusta a altura do iframe conforme o conteúdo, evitando barra de
@@ -36,6 +65,40 @@
     scrolling="no"
   ></iframe>
 </div>
+
+<!--
+  PLANO B (caminho C acima): só use se o "Elementor Canvas" não estiver
+  disponível. Remova os marcadores de comentário desta linha e da linha
+  final do bloco para ativar.
+
+  Os seletores são os do tema USP_id: #masthead (cabeçalho), #navbar
+  (menu), #colophon (rodapé), #secondary / .sidebar-container (barra
+  lateral) e .entry-header (título repetido da página).
+
+<style>
+  #masthead,
+  #navbar,
+  #colophon,
+  #secondary,
+  .sidebar-container,
+  .entry-header,
+  .entry-meta {
+    display: none !important;
+  }
+
+  /* o tema limita a largura e abre espaço para a barra lateral */
+  body.sidebar #main,
+  #page, #main, #primary, #content, .entry-content {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    float: none !important;
+  }
+
+  body { background: #fff !important; }
+</style>
+-->
 
 <script>
 (function () {

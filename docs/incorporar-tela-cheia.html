@@ -1,0 +1,140 @@
+<!--
+  ===================================================================
+  Bibliografia Processual Feminina — incorporação em TELA CHEIA
+  ===================================================================
+
+  Use este arquivo quando não for possível deixar a página em branco
+  (Elementor Canvas indisponível, ou o modelo do tema continua trazendo
+  cabeçalho, menu e barra lateral).
+
+  A ideia é outra: em vez de REMOVER o que o tema desenha, o iframe é
+  posicionado por cima de tudo (position: fixed), ocupando a janela
+  inteira. Não importa o que o tema renderize por baixo — o visitante vê
+  só o sistema. É a técnica de "full screen iframe over the page".
+
+  Vantagem: funciona em qualquer modelo de página, sem tocar no tema e
+  sem depender de permissão do administrador da rede.
+
+  Consequências, para você decidir consciente:
+  - a rolagem passa a ser interna do iframe (a altura é a da janela);
+  - o cabeçalho da USP deixa de aparecer nesta página específica;
+  - a barra de administração do WordPress continua visível para quem
+    está logado, e o código abaixo já desce o iframe para não cobri-la.
+
+  COMO USAR
+  1. Edite a página no WordPress (qualquer modelo serve).
+  2. Adicione um widget "HTML" (Elementor) ou bloco "HTML personalizado".
+  3. Cole TUDO o que está abaixo.
+  4. Publique e abra a página numa aba anônima (para ver sem a barra de
+     administração).
+-->
+
+<div id="bpf-tela-cheia">
+  <iframe
+    id="bpf-frame"
+    title="Bibliografia Processual Feminina"
+    src="https://bibliografia-feminina.vercel.app"
+  ></iframe>
+
+  <noscript>
+    <p style="padding:2rem;text-align:center;">
+      Este conteúdo precisa de JavaScript.
+      <a href="https://bibliografia-feminina.vercel.app" target="_blank" rel="noopener">
+        Abrir o sistema em nova aba</a>.
+    </p>
+  </noscript>
+</div>
+
+<style>
+  /* trava a rolagem da página hospedeira: quem rola é o iframe */
+  html.bpf-travado,
+  body.bpf-travado {
+    overflow: hidden !important;
+    height: 100% !important;
+  }
+
+  #bpf-tela-cheia {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    /* acima do tema e do Elementor, abaixo da barra do WordPress (99999) */
+    z-index: 99998;
+    background: #fff;
+  }
+
+  /* logado no WordPress, a barra de administração ocupa o topo */
+  body.admin-bar #bpf-tela-cheia {
+    top: 32px;
+    height: calc(100vh - 32px);
+  }
+  @media screen and (max-width: 782px) {
+    body.admin-bar #bpf-tela-cheia {
+      top: 46px;
+      height: calc(100vh - 46px);
+    }
+  }
+
+  #bpf-frame {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+</style>
+
+<script>
+(function () {
+  var ORIGEM_APP = "https://bibliografia-feminina.vercel.app";
+  var frame = document.getElementById("bpf-frame");
+  if (!frame) return;
+
+  // trava a rolagem de fundo só depois que o JS roda, para que a página
+  // continue utilizável se algo falhar antes daqui
+  document.documentElement.classList.add("bpf-travado");
+  document.body.classList.add("bpf-travado");
+
+  // ------------------------------------------------------------------
+  // link direto: .../pagina/#/consulta/123 abre naquela ficha
+  // ------------------------------------------------------------------
+  function rotaDoHash() {
+    var h = window.location.hash || "";
+    if (h.indexOf("#/") !== 0) return null;
+    var rota = h.slice(1);
+    return rota.indexOf("/") === 0 && rota.indexOf("//") !== 0 ? rota : null;
+  }
+
+  var inicial = rotaDoHash();
+  if (inicial) frame.src = ORIGEM_APP + inicial;
+
+  var ignorarProxima = false;
+
+  window.addEventListener("message", function (e) {
+    if (e.origin !== ORIGEM_APP) return;
+    var d = e.data;
+    if (!d || typeof d !== "object") return;
+
+    // em tela cheia a altura é a da janela; "bpf:altura" é ignorado de propósito
+    if (d.tipo === "bpf:rota" && typeof d.rota === "string") {
+      if (!ignorarProxima) {
+        try {
+          history.replaceState(
+            null, "",
+            window.location.pathname + window.location.search + "#" + d.rota
+          );
+        } catch (err) { /* navegador antigo */ }
+      }
+      ignorarProxima = false;
+    }
+  });
+
+  // botão voltar do navegador leva o app junto
+  window.addEventListener("hashchange", function () {
+    var rota = rotaDoHash();
+    if (!rota || !frame.contentWindow) return;
+    ignorarProxima = true;
+    frame.contentWindow.postMessage({ tipo: "bpf:ir", rota: rota }, ORIGEM_APP);
+  });
+})();
+</script>
