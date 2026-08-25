@@ -1,0 +1,98 @@
+<!--
+  Bibliografia Processual Feminina — incorporação na página do WordPress (USP)
+
+  COMO USAR
+  1. No WordPress, crie/edite a página que vai receber o sistema.
+  2. Escolha um layout de largura total (no Elementor: Configurações da
+     página > Layout > "Largura total" / "Elementor Canvas" se disponível).
+  3. Adicione um widget "HTML" (Elementor) ou um bloco "HTML personalizado"
+     (editor padrão) e cole TUDO o que está abaixo.
+  4. Publique.
+
+  O que este código faz além de mostrar a página:
+  - Ajusta a altura do iframe conforme o conteúdo, evitando barra de
+    rolagem dupla.
+  - Espelha a rota interna no endereço do WordPress, de modo que
+    .../pagina/#/consulta/<id> abre direto aquela ficha e o botão voltar
+    do navegador funciona.
+-->
+
+<div id="bpf-container" style="width:100%;">
+  <noscript>
+    <p style="text-align:center;padding:2rem;">
+      Este conteúdo precisa de JavaScript.
+      <a href="https://bibliografia-feminina.vercel.app" target="_blank" rel="noopener">
+        Abrir o sistema em nova aba
+      </a>.
+    </p>
+  </noscript>
+
+  <iframe
+    id="bpf-frame"
+    title="Bibliografia Processual Feminina"
+    src="https://bibliografia-feminina.vercel.app"
+    loading="lazy"
+    style="width:100%;height:900px;border:0;display:block;overflow:hidden;"
+    scrolling="no"
+  ></iframe>
+</div>
+
+<script>
+(function () {
+  var ORIGEM_APP = "https://bibliografia-feminina.vercel.app";
+  var frame = document.getElementById("bpf-frame");
+  if (!frame) return;
+
+  // ------------------------------------------------------------------
+  // 1. rota inicial: .../pagina/#/consulta/123 abre direto naquela ficha
+  // ------------------------------------------------------------------
+  function rotaDoHash() {
+    var h = window.location.hash || "";
+    if (h.indexOf("#/") !== 0) return null;
+    var rota = h.slice(1);
+    // só caminhos internos: barra o //evil.com
+    return rota.indexOf("/") === 0 && rota.indexOf("//") !== 0 ? rota : null;
+  }
+
+  var inicial = rotaDoHash();
+  if (inicial) frame.src = ORIGEM_APP + inicial;
+
+  // ------------------------------------------------------------------
+  // 2. mensagens vindas do app
+  // ------------------------------------------------------------------
+  var ignorarProximaRota = false;
+
+  window.addEventListener("message", function (e) {
+    if (e.origin !== ORIGEM_APP) return;
+    var d = e.data;
+    if (!d || typeof d !== "object") return;
+
+    if (d.tipo === "bpf:altura") {
+      var altura = parseInt(d.altura, 10);
+      // teto evita que um erro de medição estoure a página
+      if (altura > 200 && altura < 30000) frame.style.height = altura + "px";
+      return;
+    }
+
+    if (d.tipo === "bpf:rota" && typeof d.rota === "string") {
+      // replaceState: não polui o histórico a cada clique interno
+      if (!ignorarProximaRota) {
+        try {
+          history.replaceState(null, "", window.location.pathname + window.location.search + "#" + d.rota);
+        } catch (err) { /* navegador antigo */ }
+      }
+      ignorarProximaRota = false;
+    }
+  });
+
+  // ------------------------------------------------------------------
+  // 3. botão voltar do navegador: manda o app acompanhar
+  // ------------------------------------------------------------------
+  window.addEventListener("hashchange", function () {
+    var rota = rotaDoHash();
+    if (!rota || !frame.contentWindow) return;
+    ignorarProximaRota = true;
+    frame.contentWindow.postMessage({ tipo: "bpf:ir", rota: rota }, ORIGEM_APP);
+  });
+})();
+</script>

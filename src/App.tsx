@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { ReactNode } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { ReactNode, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { observarAltura, anunciarRota, ouvirNavegacao, dentroDeIframe } from "./lib/embed";
 import { AuthProvider, useAuth } from "./lib/AuthContext";
 import { Layout } from "./components/Layout";
 import { Login } from "./pages/Login";
@@ -27,6 +28,29 @@ function ProtectedRoute({ children, reqAdmin = false }: { children: ReactNode; r
   if (reqAdmin && user.role !== "ADMIN") return <Navigate to="/" replace />;
   
   return children;
+}
+
+/**
+ * Quando o site roda embutido na pagina do WordPress da USP, mantem o
+ * iframe do tamanho do conteudo e espelha a rota no endereco do pai, para
+ * que links diretos e o botao voltar continuem funcionando.
+ */
+function SincronizaEmbed() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!dentroDeIframe()) return;
+    const pararAltura = observarAltura();
+    const pararNavegacao = ouvirNavegacao((rota) => navigate(rota));
+    return () => { pararAltura(); pararNavegacao(); };
+  }, [navigate]);
+
+  useEffect(() => {
+    anunciarRota(location.pathname + location.search);
+  }, [location.pathname, location.search]);
+
+  return null;
 }
 
 function AppRoutes() {
@@ -55,6 +79,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <SincronizaEmbed />
         <AppRoutes />
       </BrowserRouter>
     </AuthProvider>
