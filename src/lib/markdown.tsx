@@ -117,7 +117,9 @@ export function Markdown({ texto, className = "" }: { texto: string; className?:
     }
 
     blocos.push(
-      <p key={blocos.length} className="text-[var(--text-muted)] leading-relaxed text-justify">
+      // sem text-justify: em portugues, sem hifenizacao, ele abre rios de
+      // espaco entre as palavras nos paragrafos longos da metodologia
+      <p key={blocos.length} className="text-[var(--text-muted)] leading-[1.75]">
         <Trechos linha={linha} />
       </p>
     );

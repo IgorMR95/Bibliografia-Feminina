@@ -22,22 +22,24 @@ export const PaginaTexto = ({ slug, Icone }: { slug: string; Icone: LucideIcon }
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-10 pb-20 fade-in">
-      <div className="bg-white rounded-2xl border border-[var(--border)] shadow-sm overflow-hidden">
-        <div className="p-10 md:p-16 border-b border-[var(--border)] bg-[var(--nav-active)] text-center">
-          <Icone className="w-12 h-12 text-[var(--accent)] mx-auto mb-6" />
-          <h1 className="text-3xl md:text-4xl font-serif font-bold text-[var(--heading)] mb-4">
-            {pagina.titulo}
-          </h1>
-          {pagina.subtitulo && (
-            <p className="text-lg text-[var(--text-muted)] max-w-2xl mx-auto">{pagina.subtitulo}</p>
-          )}
+    <div className="max-w-3xl mx-auto pb-24 fade-in">
+      <header className="pt-12 pb-10 text-center">
+        <div className="w-11 h-11 rounded-lg bg-[var(--nav-active)] flex items-center justify-center mx-auto mb-6">
+          <Icone className="w-5 h-5 text-[var(--accent)]" />
         </div>
+        <h1 className="text-4xl md:text-[2.75rem] font-serif font-bold text-[var(--heading)] leading-tight">
+          {pagina.titulo}
+        </h1>
+        {pagina.subtitulo && (
+          <p className="mt-4 text-lg text-[var(--text-muted)] max-w-2xl mx-auto leading-relaxed">
+            {pagina.subtitulo}
+          </p>
+        )}
+      </header>
 
-        <div className="p-10 md:p-16">
-          <Markdown texto={pagina.conteudo} />
-        </div>
-      </div>
+      <article className="rounded-xl border border-[var(--border)] bg-white p-8 md:p-12">
+        <Markdown texto={pagina.conteudo} />
+      </article>
     </div>
   );
 };
