@@ -3,6 +3,15 @@ import { supabase } from "../lib/supabase";
 import { callEdgeFunction } from "../lib/supabase";
 import { useAuth } from "../lib/AuthContext";
 import { UserPlus, Clock } from "lucide-react";
+import { ImportarBase } from "../components/ImportarBase";
+
+const TABS = {
+  usuarios: "Usuários",
+  auditoria: "Histórico de Alimentação",
+  campos: "Campos Base Extras",
+  tabelas: "Gerar Novas Tabelas",
+  importar: "Substituir Base (Planilha)",
+} as const;
 
 export const Administracao = () => {
   const [users, setUsers] = useState<any[]>([]);
@@ -92,16 +101,18 @@ export const Administracao = () => {
       </div>
 
       <div className="flex border-b border-[var(--border)] overflow-x-auto whitespace-nowrap">
-        {["usuarios", "auditoria", "campos", "tabelas"].map(tab => (
+        {Object.entries(TABS).map(([tab, label]) => (
           <button
             key={tab}
             className={`px-4 py-3 font-semibold text-sm ${activeTab === tab ? "border-b-2 border-[var(--accent)] text-[var(--accent)]" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"}`}
             onClick={() => setActiveTab(tab)}
           >
-            {tab === "usuarios" ? "Usuários" : tab === "auditoria" ? "Histórico de Alimentação" : tab === "campos" ? "Campos Base Extras" : "Gerar Novas Tabelas"}
+            {label}
           </button>
         ))}
       </div>
+
+      {activeTab === "importar" && <ImportarBase />}
 
       {activeTab === "usuarios" && (
         <div className="bg-white rounded-xl border border-[var(--border)] shadow-sm overflow-hidden">

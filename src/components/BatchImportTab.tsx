@@ -185,15 +185,15 @@ export const BatchImportTab = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 bg-[var(--bg)] rounded-lg border border-[var(--border)]">
               <span className="block text-[10px] font-bold uppercase text-[var(--text-muted)] mb-1">Processualistas</span>
-              <span className="text-2xl font-serif text-[var(--accent)]">{result.success_associadas ?? result.associadas_count ?? 0}</span>
+              <span className="text-2xl font-serif text-[var(--accent)]">{result.criadas ?? 0}</span>
             </div>
             <div className="p-4 bg-[var(--bg)] rounded-lg border border-[var(--border)]">
               <span className="block text-[10px] font-bold uppercase text-[var(--text-muted)] mb-1">Produções Bibliográficas</span>
-              <span className="text-2xl font-serif text-[var(--accent)]">{result.success_producoes ?? result.producoes_count ?? 0}</span>
+              <span className="text-2xl font-serif text-[var(--accent)]">{result.producoes ?? 0}</span>
             </div>
             <div className="p-4 bg-orange-50 rounded-lg border border-orange-100">
               <span className="block text-[10px] font-bold uppercase text-orange-600 mb-1">Duplicadas / Puladas</span>
-              <span className="text-2xl font-serif text-orange-700">{result.duplicates_skipped ?? result.failed ?? 0}</span>
+              <span className="text-2xl font-serif text-orange-700">{result.duplicadas ?? 0}</span>
             </div>
           </div>
 

@@ -1,8 +1,70 @@
-# Sistema de Gestão de Associadas
+# Observatório das Processualistas Brasileiras
 
-Sistema completo (Full-stack) com Node.js (Express), React (Vite), Tailwind CSS e Prisma ORM para gestão avançada, consulta, dashboard e importação de associadas via Excel.
+Aplicação React (Vite) + Tailwind para consulta, dashboards e alimentação da base de
+processualistas brasileiras e sua produção bibliográfica.
 
-## 🚀 Requisitos e Configuração do Banco de Dados Hospedado
+> ⚠️ **O backend é o Supabase.** O frontend fala direto com ele (`src/lib/supabase.ts`):
+> tabelas via PostgREST, regras via RLS, e operações privilegiadas via Edge Functions.
+>
+> Os arquivos `server.ts`, `src/server/`, `prisma/`, `seed.ts` e `scripts/import-excel.mjs`
+> são de uma arquitetura Express + Prisma que **não está mais em uso** e não roda em
+> produção. O `prisma/schema.prisma` já divergiu do banco real (hoje o schema verdadeiro
+> está em `supabase/migrations/`). As instruções da seção histórica no fim deste arquivo
+> se referem a essa versão antiga.
+
+## 🚀 Configuração
+
+Crie um `.env` a partir do `.env.example` com as credenciais do projeto Supabase:
+
+```
+VITE_SUPABASE_URL="https://<ref>.supabase.co"
+VITE_SUPABASE_ANON_KEY="<anon key>"
+```
+
+Depois:
+
+```bash
+npm install
+npm run dev
+```
+
+## 📊 Estrutura da base
+
+| Tabela | Papel |
+|---|---|
+| `associadas` | cadastro central das processualistas |
+| `producoes_bibliograficas` | obras publicadas, ligadas à associada |
+| `vinculos_docentes` | instituições em que leciona (+ ranking 40+) |
+| `perfis` | espelha `auth.users`, com role `ADMIN` / `ANOTADOR` |
+| `importacoes` | histórico das substituições de base, com snapshot para rollback |
+
+## 📥 Substituir a base por uma planilha
+
+Admins têm, em **Administração → Substituir Base (Planilha)**, o fluxo completo:
+
+1. envia o `.xlsx` (aba 1 = processualistas, aba 2 = bibliografia);
+2. **Analisar** roda um dry-run e mostra quantas serão atualizadas, criadas e removidas,
+   listando nominalmente quem sai — sem gravar nada;
+3. confirmar exige digitar `SUBSTITUIR`;
+4. antes de gravar, o banco guarda um snapshot completo do estado anterior, revertível
+   com um clique no histórico da mesma tela.
+
+O caminho é servido pela Edge Function `import-planilha`, que valida o JWT e exige role
+`ADMIN`. As funções `substituir_base_completa` e `reverter_importacao` têm `EXECUTE`
+revogado de `anon` e `authenticated` — o browser não as alcança diretamente.
+
+Para publicar mudanças no schema ou na função:
+
+```bash
+supabase db push
+supabase functions deploy import-planilha
+```
+
+---
+
+## Seção histórica — arquitetura Express + Prisma (desativada)
+
+O que segue vale apenas para a versão antiga, mantida no repositório por referência.
 
 Este projeto utiliza PostgreSQL. Como regra de negócio, você deve fornecer as credenciais de um banco de dados **PostgreSQL na nuvem** (pode ser AWS RDS, Neon.tech, Render, Railway, DigitalOcean, etc, **exceto Supabase**).
 
