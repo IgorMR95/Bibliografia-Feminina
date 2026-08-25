@@ -178,7 +178,6 @@ export const Dashboards = () => {
   const atuacaoData = comOutros(serie(data.por_atuacao), 6);
   const tipoData = serie(data.por_tipo_obra, totalObras);
   const areaData = serie(data.por_area, totalObras);
-  const instData = serie(data.por_instituicao, total).slice(0, 10);
 
   // série temporal: respeita o recorte de 2015 e marca o ano ainda em curso
   const anoAtual = new Date().getFullYear();
@@ -439,28 +438,6 @@ export const Dashboards = () => {
             </Cartao>
           </div>
 
-          {/* NOVO: instituições */}
-          <Cartao
-            titulo="Instituições com mais processualistas"
-            nota="Vínculos docentes declarados. Cada pesquisadora conta uma vez por instituição."
-          >
-            <div className="h-[340px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={instData} layout="vertical" margin={{ left: 8, right: 48 }}>
-                  <XAxis type="number" hide />
-                  <YAxis
-                    type="category" dataKey="name" axisLine={false} tickLine={false}
-                    tick={{ fill: TINTA, fontSize: 11 }} width={230}
-                    tickFormatter={(v: string) => (v.length > 34 ? v.slice(0, 33) + "…" : v)}
-                  />
-                  <Tooltip cursor={{ fill: "var(--row-hover)" }} content={<CaixaTooltip sufixo="processualistas" />} />
-                  <Bar dataKey="value" fill={UNICA} radius={[0, 4, 4, 0]} maxBarSize={20}>
-                    <LabelList dataKey="value" position="right" style={{ fill: TINTA, fontSize: 11, fontWeight: 600 }} />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Cartao>
         </div>
       </div>
     </div>
