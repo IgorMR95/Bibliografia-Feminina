@@ -15,7 +15,8 @@ import { Administracao } from "./pages/Administracao";
 import { DetalheAssociada } from "./pages/DetalheAssociada";
 import { Home } from "./pages/Home";
 import { Sobre } from "./pages/Sobre";
-import { Idealizadoras } from "./pages/Idealizadoras";
+import { Metodologia } from "./pages/Metodologia";
+import { QuemSomos } from "./pages/QuemSomos";
 import { AdminCrud } from "./pages/AdminCrud";
 
 function ProtectedRoute({ children, reqAdmin = false }: { children: ReactNode; reqAdmin?: boolean }) {
@@ -35,7 +36,10 @@ function AppRoutes() {
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="sobre" element={<Sobre />} />
-        <Route path="idealizadoras" element={<Idealizadoras />} />
+        <Route path="metodologia" element={<Metodologia />} />
+        <Route path="quem-somos" element={<QuemSomos />} />
+        {/* rota antiga, mantida para nao quebrar links ja divulgados */}
+        <Route path="idealizadoras" element={<Navigate to="/quem-somos" replace />} />
         <Route path="consulta" element={<Consulta />} />
         <Route path="consulta/:id" element={<DetalheAssociada />} />
         <Route path="dashboards" element={<Dashboards />} />

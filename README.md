@@ -37,6 +37,26 @@ npm run dev
 | `vinculos_docentes` | instituições em que leciona (+ ranking 40+) |
 | `perfis` | espelha `auth.users`, com role `ADMIN` / `ANOTADOR` |
 | `importacoes` | histórico das substituições de base, com snapshot para rollback |
+| `paginas` | texto (markdown) da Home, Sobre, Metodologia e Quem Somos |
+| `membros` | equipe do projeto, agrupada por `grupos_membros` |
+
+## ✍️ Textos do site
+
+Home, Sobre, Metodologia e Quem Somos **não têm texto no código**: leem de `paginas`,
+e uma admin edita em **Administração → Textos do Site**, com prévia lado a lado. O que
+for publicado aparece no site na hora, sem novo deploy.
+
+O markdown aceito é o mínimo necessário (`## título`, `**negrito**`, `*itálico*`,
+listas com `-`, `[link](url)`) e é renderizado por `src/lib/markdown.tsx`, que monta
+elementos React em vez de injetar HTML — conteúdo do painel nunca vira marcação executável.
+
+Fotos da equipe ficam no bucket `membros` do Supabase Storage (público para leitura,
+upload só por ADMIN). Quem não tem foto aparece com as iniciais.
+
+Os números da Home vêm de `get_numeros_home()`, ou seja, do que a base realmente tem.
+Os números do levantamento original (481 processualistas mapeadas, 6.824 obras) são um
+**relato histórico da pesquisa** e seguem preservados no texto da Metodologia — não
+confundir com o tamanho da base consultável.
 
 ## 📥 Substituir a base por uma planilha
 

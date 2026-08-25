@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/AuthContext";
-import { Search, LayoutDashboard, Database, Shield, LogOut, Users, LogIn, Home as HomeIcon, BookMarked, Menu, X, TableProperties } from "lucide-react";
+import { Search, LayoutDashboard, Database, Shield, LogOut, Users, LogIn, Home as HomeIcon, BookMarked, Menu, X, TableProperties, FlaskConical } from "lucide-react";
 import { cn } from "../lib/utils";
 import { useState } from "react";
 
@@ -13,7 +13,8 @@ export const Layout = () => {
   const navigation = [
     { name: "Início", href: "/", icon: HomeIcon, exact: true },
     { name: "Sobre o Projeto", href: "/sobre", icon: BookMarked },
-    { name: "Idealizadoras", href: "/idealizadoras", icon: Users },
+    { name: "Metodologia", href: "/metodologia", icon: FlaskConical },
+    { name: "Quem Somos", href: "/quem-somos", icon: Users },
     { name: "Consulta da Base", href: "/consulta", icon: Search },
     { name: "Estatísticas", href: "/dashboards", icon: LayoutDashboard },
   ];

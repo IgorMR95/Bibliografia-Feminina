@@ -4,9 +4,11 @@ import { callEdgeFunction } from "../lib/supabase";
 import { useAuth } from "../lib/AuthContext";
 import { UserPlus, Clock } from "lucide-react";
 import { ImportarBase } from "../components/ImportarBase";
+import { EditorConteudo } from "../components/EditorConteudo";
 
 const TABS = {
   usuarios: "Usuários",
+  conteudo: "Textos do Site",
   auditoria: "Histórico de Alimentação",
   campos: "Campos Base Extras",
   tabelas: "Gerar Novas Tabelas",
@@ -113,6 +115,7 @@ export const Administracao = () => {
       </div>
 
       {activeTab === "importar" && <ImportarBase />}
+      {activeTab === "conteudo" && <EditorConteudo />}
 
       {activeTab === "usuarios" && (
         <div className="bg-white rounded-xl border border-[var(--border)] shadow-sm overflow-hidden">
