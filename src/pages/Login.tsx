@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../lib/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { Rodape } from "../components/Rodape";
 
 export const Login = () => {
   const [email, setEmail] = useState("");
@@ -62,10 +63,8 @@ export const Login = () => {
         </form>
       </div>
 
-      <div className="absolute bottom-8 text-center w-full">
-        <p className="text-sm text-[var(--text-muted)]">
-          Desenvolvido por Igor Moraes Rocha, 2026
-        </p>
+      <div className="absolute bottom-8 w-full">
+        <Rodape compacto />
       </div>
     </div>
   );

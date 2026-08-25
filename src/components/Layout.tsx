@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { useState } from "react";
+import { Rodape } from "./Rodape";
 
 /** rotas cujas paginas ja renderizam o proprio titulo */
 const SEM_CABECALHO = new Set(["/", "/sobre", "/metodologia", "/quem-somos"]);
@@ -190,21 +191,7 @@ export const Layout = () => {
           <Outlet />
         </div>
 
-        <footer className="border-t border-[var(--border)] bg-white mt-auto">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-            <div>
-              <p className="font-serif font-semibold text-[13px] text-[var(--accent)]">
-                Bibliografia Processual Feminina
-              </p>
-              <p className="text-[12px] text-[var(--text-muted)] mt-0.5">
-                Grupo de pesquisa · Faculdade de Direito da Universidade de São Paulo
-              </p>
-            </div>
-            <p className="text-[12px] text-[var(--text-muted)]">
-              Desenvolvido por Igor Moraes Rocha · 2026
-            </p>
-          </div>
-        </footer>
+        <Rodape />
       </main>
     </div>
   );
