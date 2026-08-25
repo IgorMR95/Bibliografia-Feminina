@@ -102,13 +102,13 @@ export function Markdown({ texto, className = "" }: { texto: string; className?:
       const txt = titulo[2];
       if (nivel <= 2) {
         blocos.push(
-          <h2 key={blocos.length} className="text-2xl font-serif italic text-[var(--text-main)] mt-10 mb-4 first:mt-0">
+          <h2 key={blocos.length} className="text-2xl font-serif font-semibold text-[var(--heading)] mt-10 mb-4 first:mt-0">
             <Trechos linha={txt} />
           </h2>
         );
       } else {
         blocos.push(
-          <h3 key={blocos.length} className="text-lg font-bold text-[var(--text-main)] mt-8 mb-3">
+          <h3 key={blocos.length} className="text-lg font-serif font-bold text-[var(--text-main)] mt-8 mb-3">
             <Trechos linha={txt} />
           </h3>
         );

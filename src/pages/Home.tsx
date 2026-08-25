@@ -25,7 +25,7 @@ export const Home = () => {
         <div className="inline-flex items-center px-3 py-1 rounded-full bg-[var(--nav-active)] text-[var(--accent)] text-xs font-bold uppercase tracking-widest mb-6">
           Faculdade de Direito · USP
         </div>
-        <h1 className="text-4xl md:text-6xl font-serif italic text-[var(--text-main)] max-w-4xl mx-auto leading-tight mb-6">
+        <h1 className="text-4xl md:text-6xl font-serif font-bold text-[var(--heading)] max-w-4xl mx-auto leading-tight mb-6">
           {pagina?.titulo ?? "Bibliografia Processual Feminina"}
         </h1>
         {pagina?.subtitulo && (

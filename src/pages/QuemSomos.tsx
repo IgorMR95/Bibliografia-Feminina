@@ -63,7 +63,7 @@ export const QuemSomos = () => {
     <div className="max-w-6xl mx-auto space-y-12 pb-20 fade-in">
       <div className="text-center py-10">
         <Users className="w-10 h-10 text-[var(--accent)] mx-auto mb-6" />
-        <h1 className="text-4xl font-serif italic text-[var(--text-main)] mb-4">
+        <h1 className="text-4xl font-serif font-bold text-[var(--heading)] mb-4">
           {pagina?.titulo ?? "Quem Somos"}
         </h1>
         {pagina?.subtitulo && (

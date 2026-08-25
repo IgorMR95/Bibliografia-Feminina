@@ -26,7 +26,7 @@ export const PaginaTexto = ({ slug, Icone }: { slug: string; Icone: LucideIcon }
       <div className="bg-white rounded-2xl border border-[var(--border)] shadow-sm overflow-hidden">
         <div className="p-10 md:p-16 border-b border-[var(--border)] bg-[var(--nav-active)] text-center">
           <Icone className="w-12 h-12 text-[var(--accent)] mx-auto mb-6" />
-          <h1 className="text-3xl md:text-4xl font-serif italic text-[var(--text-main)] mb-4">
+          <h1 className="text-3xl md:text-4xl font-serif font-bold text-[var(--heading)] mb-4">
             {pagina.titulo}
           </h1>
           {pagina.subtitulo && (

@@ -4,6 +4,9 @@ import { Search, LayoutDashboard, Database, Shield, LogOut, Users, LogIn, Home a
 import { cn } from "../lib/utils";
 import { useState } from "react";
 
+/** rotas cujas paginas ja renderizam o proprio titulo */
+const SEM_CABECALHO = new Set(["/", "/sobre", "/metodologia", "/quem-somos"]);
+
 export const Layout = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
@@ -36,13 +39,17 @@ export const Layout = () => {
   return (
     <div className="flex flex-col min-h-screen bg-[var(--bg)] font-sans">
       {/* Top Navbar */}
-      <nav className="bg-[var(--sidebar)] border-b border-[var(--border)] sticky top-0 z-50">
+      <nav className="bg-[var(--navbar)] border-b border-[var(--accent)]/15 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <Link to="/" className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-[var(--accent)] rounded-lg flex items-center justify-center text-white font-serif italic text-xl">A</div>
-                <span className="font-serif italic text-xl text-[var(--text-main)]">Associadas</span>
+              <Link to="/" className="flex items-center gap-2.5">
+                <div className="w-8 h-8 bg-[var(--accent)] rounded flex items-center justify-center text-white font-serif font-bold text-sm tracking-tight">
+                  BPF
+                </div>
+                <span className="font-serif font-semibold text-base text-[var(--accent)] leading-tight hidden sm:block">
+                  Bibliografia<br className="hidden lg:block" /> Processual Feminina
+                </span>
               </Link>
             </div>
             
@@ -56,9 +63,9 @@ export const Layout = () => {
                     to={item.href}
                     className={cn(
                       "px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center",
-                      isActive 
-                        ? "bg-[var(--nav-active)] text-[var(--accent)]" 
-                        : "text-[var(--text-muted)] hover:bg-[var(--nav-hover)] hover:text-[var(--text-main)]"
+                      isActive
+                        ? "bg-[var(--navbar-active)] text-[var(--accent)] shadow-sm"
+                        : "text-[var(--accent)]/80 hover:bg-[var(--navbar-hover)] hover:text-[var(--accent)]"
                     )}
                   >
                     <item.icon className="w-4 h-4 mr-2" />
@@ -67,15 +74,15 @@ export const Layout = () => {
                 )
               })}
               
-              <div className="ml-4 pl-4 border-l border-[var(--border)] flex items-center">
+              <div className="ml-4 pl-4 border-l border-[var(--accent)]/20 flex items-center">
                 {user ? (
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[var(--nav-active)] flex items-center justify-center text-[var(--accent)] font-bold text-xs">
+                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[var(--accent)] font-bold text-xs">
                       {user?.nome?.substring(0, 2).toUpperCase() || 'AD'}
                     </div>
                     <button
                       onClick={handleLogout}
-                      className="text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors p-2 rounded-md hover:bg-[var(--nav-hover)]"
+                      className="text-[var(--accent)]/80 hover:text-[var(--accent)] transition-colors p-2 rounded-md hover:bg-[var(--navbar-hover)]"
                       title="Sair"
                     >
                       <LogOut className="h-5 w-5" />
@@ -97,7 +104,7 @@ export const Layout = () => {
             <div className="flex items-center md:hidden">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-[var(--text-muted)] hover:text-[var(--text-main)] p-2"
+                className="text-[var(--accent)] hover:bg-[var(--navbar-hover)] rounded-md p-2"
               >
                 {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </button>
@@ -107,7 +114,7 @@ export const Layout = () => {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-[var(--border)] bg-[var(--sidebar)]">
+          <div className="md:hidden border-t border-[var(--accent)]/15 bg-[var(--navbar)]">
             <div className="pt-2 pb-3 space-y-1 px-4">
               {navigation.map((item) => {
                 const isActive = item.exact ? location.pathname === item.href : location.pathname.startsWith(item.href);
@@ -118,9 +125,9 @@ export const Layout = () => {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={cn(
                       "block px-3 py-2 rounded-md text-base font-medium flex items-center",
-                      isActive 
-                        ? "bg-[var(--nav-active)] text-[var(--accent)]" 
-                        : "text-[var(--text-muted)] hover:bg-[var(--nav-hover)] hover:text-[var(--text-main)]"
+                      isActive
+                        ? "bg-[var(--navbar-active)] text-[var(--accent)] shadow-sm"
+                        : "text-[var(--accent)]/80 hover:bg-[var(--navbar-hover)] hover:text-[var(--accent)]"
                     )}
                   >
                     <item.icon className="w-5 h-5 mr-3" />
@@ -129,21 +136,21 @@ export const Layout = () => {
                 )
               })}
               
-              <div className="mt-4 pt-4 border-t border-[var(--border)]">
+              <div className="mt-4 pt-4 border-t border-[var(--accent)]/20">
                 {user ? (
                   <div className="space-y-2">
                     <div className="flex items-center px-3 py-2">
-                      <div className="w-8 h-8 rounded-full bg-[var(--nav-active)] flex items-center justify-center text-[var(--accent)] font-bold text-xs mr-3">
+                      <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[var(--accent)] font-bold text-xs mr-3">
                         {user.nome?.substring(0, 2).toUpperCase() || 'AD'}
                       </div>
                       <div className="text-sm">
-                        <p className="font-medium text-[var(--text-main)]">{user.nome}</p>
-                        <p className="text-[10px] text-[var(--text-muted)]">{user.role}</p>
+                        <p className="font-medium text-[var(--accent)]">{user.nome}</p>
+                        <p className="text-[10px] text-[var(--accent)]/70">{user.role}</p>
                       </div>
                     </div>
                     <button
                       onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}
-                      className="w-full flex items-center px-3 py-2 rounded-md text-base font-medium text-[var(--text-muted)] hover:bg-[var(--nav-hover)] hover:text-[var(--text-main)]"
+                      className="w-full flex items-center px-3 py-2 rounded-md text-base font-medium text-[var(--accent)]/80 hover:bg-[var(--navbar-hover)] hover:text-[var(--accent)]"
                     >
                       <LogOut className="h-5 w-5 mr-3" />
                       Sair
@@ -166,11 +173,15 @@ export const Layout = () => {
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto bg-[var(--bg)] flex flex-col">
-        <header className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-           <h1 className="text-2xl font-serif italic text-[var(--accent)] capitalize">
-              {location.pathname === "/" ? "" : location.pathname.split("/")[1]?.replace(/-/g, " ")}
-           </h1>
-        </header>
+        {/* paginas institucionais ja trazem o proprio titulo; repetir a rota
+            aqui em cima duplicava o cabecalho */}
+        {!SEM_CABECALHO.has(location.pathname) && (
+          <header className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <h1 className="text-2xl font-serif font-bold text-[var(--heading)] capitalize">
+              {location.pathname.split("/")[1]?.replace(/-/g, " ")}
+            </h1>
+          </header>
+        )}
         <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pb-12 flex-1">
           <Outlet />
         </div>

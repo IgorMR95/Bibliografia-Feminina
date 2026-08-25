@@ -1,32 +1,82 @@
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Inter:wght@400;500;600&display=swap');
+/*
+ * Identidade visual alinhada ao site do grupo em sites.usp.br.
+ *
+ * Fontes e cores foram tiradas do proprio tema USP_id:
+ *   - titulos em Open Sans (no CSS deles o Bitter esta comentado)
+ *   - texto em Source Sans Pro
+ *   - #014955 petroleo institucional, #1094ab turquesa dos titulos,
+ *     #64c4d2 da barra de navegacao, #ea9629 de destaque, #141412 no texto
+ *
+ * O turquesa (#1094ab) tem contraste ~3.4:1 sobre branco: serve para
+ * titulo grande, nao para texto pequeno nem para fundo de botao. Por isso
+ * o --accent (botoes, links, rotulos) e' o petroleo escuro, que da ~10:1.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap');
 @import "tailwindcss";
 
 :root {
-  --bg: #FDFBFB;
+  --bg: #F6FAFB;
   --sidebar: #FFFFFF;
-  --accent: #863F56;
-  --accent-hover: #703348;
-  --text-main: #3E383B;
-  --text-muted: #82787A;
-  --border: #F0E6E8;
-  --success: #4A6741;
-  --success-bg: #E9F2E6;
-  --warning: #C18C3F;
-  --warning-bg: #FEF3E2;
-  --error: #991B1B;
-  --error-bg: #FEE2E2;
-  --nav-active: #F8EDEF;
-  --nav-hover: #FCF5F6;
-  --row-hover: #FAF7F8;
+
+  /* petroleo institucional: botoes, links e rotulos */
+  --accent: #014955;
+  --accent-hover: #013640;
+
+  /* turquesa dos titulos da USP */
+  --heading: #1094ab;
+
+  /* ciano da barra de navegacao */
+  --navbar: #64c4d2;
+  --navbar-hover: #7ccfdb;
+  --navbar-active: #FFFFFF;
+
+  /* ambar de destaque */
+  --highlight: #ea9629;
+  --highlight-bg: #FDF3E3;
+
+  --text-main: #141412;
+  --text-muted: #5F6B6E;
+  --border: #DCE8EB;
+
+  --success: #2E7D5B;
+  --success-bg: #E6F4EE;
+  --warning: #B87514;
+  --warning-bg: #FDF3E3;
+  --error: #A02B18;
+  --error-bg: #FBE9E6;
+
+  --nav-active: #E2F3F6;
+  --nav-hover: #EFF9FA;
+  --row-hover: #F3FAFB;
 }
 
 @theme {
-  --font-serif: 'Lora', serif;
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  /* o tema da USP usa Open Sans tambem nos titulos; mantemos o slot
+     "serif" para nao ter que reescrever as classes de todo o app */
+  --font-serif: 'Open Sans', 'Segoe UI', sans-serif;
+  --font-sans: 'Source Sans 3', 'Source Sans Pro', Helvetica, ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
   background-color: var(--bg);
   color: var(--text-main);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * O layout marcava titulo com "font-serif italic", heranca da fase Lora.
+ * Open Sans italico nesse tamanho fica arrastado e nao e' o que a USP faz,
+ * entao o italico e' anulado apenas nessa combinacao — o <em> do texto
+ * corrido, que nao usa font-serif, segue italico normalmente.
+ */
+.font-serif.italic {
+  font-style: normal;
+  letter-spacing: -0.01em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  line-height: 1.3;
 }
