@@ -543,8 +543,21 @@ async function montarConteudo() {
       buscarJson("membros?select=id,nome,funcao,grupo,bio,foto_url,lattes_url,ordem&order=ordem"),
       buscarJson("grupos_membros?select=nome,ordem&order=ordem"),
     ]);
-    console.log(`  conteúdo institucional: ${paginas.length} páginas, ${membros.length} pessoas`);
-    return { paginas, membros, grupos };
+    // Título e subtítulo são texto puro, não passam pelo renderizador de
+    // markdown. Como o editor mostra prévia de markdown no corpo, é natural
+    // escrever "## Alguma coisa" aqui também — e aí o "##" apareceria
+    // literal na página. Some na geração.
+    const semMarcacao = (v) =>
+      typeof v === "string" ? v.replace(/^\s*#{1,6}\s*/, "").trim() : v;
+
+    const limpas = paginas.map((p) => ({
+      ...p,
+      titulo: semMarcacao(p.titulo),
+      subtitulo: semMarcacao(p.subtitulo),
+    }));
+
+    console.log(`  conteúdo institucional: ${limpas.length} páginas, ${membros.length} pessoas`);
+    return { paginas: limpas, membros, grupos };
   } catch (e) {
     console.log(`  conteúdo institucional: falhou (${e.message}) — mantendo o arquivo atual`);
     return fs.existsSync(destino) ? JSON.parse(fs.readFileSync(destino, "utf8")) : null;

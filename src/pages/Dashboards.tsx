@@ -115,6 +115,12 @@ export const Dashboards = () => {
   const [filters, setFilters] = useState({
     uf: "", ibdp: "", abep: "", ranking: "",
   });
+  /**
+   * Guardado na primeira carga, que é sempre sem filtro. Se saísse dos
+   * dados já filtrados, escolher um estado deixaria a lista com um item só
+   * e não haveria como voltar para outro.
+   */
+  const [ufsDisponiveis, setUfsDisponiveis] = useState<string[]>([]);
 
   /** normaliza e já calcula a fatia de cada item sobre a base escolhida */
   const serie = (arr: any[], base?: number): Ponto[] => {
@@ -140,7 +146,11 @@ export const Dashboards = () => {
     setLoading(true);
     try {
       if (!temFiltro(filters)) {
-        setData(await getEstatisticas());
+        const est = await getEstatisticas();
+        setData(est);
+        setUfsDisponiveis(
+          (est.por_uf ?? []).map((u: any) => String(u.label)).sort()
+        );
       } else {
         const [associadas, obras] = await Promise.all([getAssociadas(), getObras()]);
         setData(calcular(aplicarFiltros(associadas, filters), obras));
@@ -226,9 +236,20 @@ export const Dashboards = () => {
           <select value={filters.ranking} onChange={(e) => setFilters({ ...filters, ranking: e.target.value })} className={selectCls}>
             <option value="">Ranking 40+</option><option value="true">Sim</option><option value="false">Não</option>
           </select>
-          <input type="text" placeholder="UF" maxLength={2} value={filters.uf}
-            onChange={(e) => setFilters({ ...filters, uf: e.target.value.toUpperCase() })}
-            className="w-14 px-2 py-2 bg-transparent text-[11px] font-semibold uppercase outline-none" />
+          {/*
+            Lista, não campo livre: digitar "sp" ou uma UF sem registro
+            devolvia um painel vazio sem explicar por quê. As opções são as
+            unidades que existem na base, capturadas na carga sem filtro —
+            filtrar por uma delas nunca dá resultado vazio.
+          */}
+          <select
+            value={filters.uf}
+            onChange={(e) => setFilters({ ...filters, uf: e.target.value })}
+            className={selectCls}
+          >
+            <option value="">Estado</option>
+            {ufsDisponiveis.map((u) => <option key={u} value={u}>{u}</option>)}
+          </select>
           <button
             onClick={() => setFilters({ uf: "", ibdp: "", abep: "", ranking: "" })}
             className="px-3 py-2 text-[11px] font-semibold text-[var(--accent)] hover:underline"
