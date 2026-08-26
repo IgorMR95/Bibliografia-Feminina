@@ -2,6 +2,7 @@ import { ArrowRight, BookOpen, Users, FlaskConical } from "lucide-react";
 import { Link } from "react-router-dom";
 import { usePagina, useNumerosHome } from "../lib/conteudo";
 import { Markdown } from "../lib/markdown";
+import banner from "../assets/banner-bpf.jpg";
 
 const Numero = ({ valor, rotulo }: { valor?: number; rotulo: string }) => (
   <div className="text-center px-4 py-7">
@@ -20,16 +21,26 @@ export const Home = () => {
 
   return (
     <div className="max-w-6xl mx-auto space-y-16 pb-20 fade-in">
-      {/* abertura */}
-      <section className="text-center pt-16 pb-2">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)] mb-5">
-          Faculdade de Direito · Universidade de São Paulo
-        </p>
-        <h1 className="text-[2.5rem] md:text-[3.25rem] font-serif font-bold text-[var(--heading)] max-w-3xl mx-auto leading-[1.1] mb-6">
-          {pagina?.titulo ?? "Bibliografia Processual Feminina"}
-        </h1>
+      {/*
+        A abertura é o próprio banner do grupo, no lugar do título escrito:
+        ele já traz o nome, o selo da USP e o brasão da Faculdade. Como o
+        fundo do banner é o mesmo teal da barra de navegação, a imagem
+        aparece encostada no topo, sem respiro, para as duas se emendarem
+        numa faixa só em vez de a imagem flutuar sobre o fundo claro.
+      */}
+      <section className="-mx-4 sm:-mx-6 lg:-mx-8">
+        <img
+          src={banner}
+          alt="Bibliografia Processual Feminina — grupo de pesquisa da Faculdade de Direito da Universidade de São Paulo"
+          width={1170}
+          height={472}
+          className="w-full h-auto block"
+        />
+      </section>
+
+      <section className="text-center !mt-10">
         {pagina?.subtitulo && (
-          <p className="text-[17px] text-[var(--text-muted)] max-w-2xl mx-auto leading-relaxed mb-9">
+          <p className="text-[17px] text-[var(--text-muted)] max-w-2xl mx-auto leading-relaxed mb-8">
             {pagina.subtitulo}
           </p>
         )}
