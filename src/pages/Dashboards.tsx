@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { supabase } from "../lib/supabase";
+import { getEstatisticas, getAssociadas, getObras } from "../lib/base";
+import { aplicarFiltros, calcular, temFiltro } from "../lib/estatisticas";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, AreaChart, Area, LabelList,
@@ -118,7 +119,7 @@ export const Dashboards = () => {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
-    uf: "", status_registro: "", ibdp: "", abep: "", ranking: "",
+    uf: "", ibdp: "", abep: "", ranking: "",
   });
 
   /** normaliza e já calcula a fatia de cada item sobre a base escolhida */
@@ -136,19 +137,20 @@ export const Dashboards = () => {
       .sort((a, b) => b.value - a.value);
   };
 
+  /**
+   * Sem filtro, usa o arquivo de estatísticas já somado (1 KB). Só quando
+   * alguém filtra é que vale baixar a base inteira e recalcular no
+   * navegador — assim a página abre instantânea no caso comum.
+   */
   const loadStats = async () => {
     setLoading(true);
     try {
-      const { data: result, error } = await supabase.rpc("get_dashboard_stats", {
-        p_uf: filters.uf || null,
-        p_status: filters.status_registro || null,
-        p_ibdp: filters.ibdp !== "" ? filters.ibdp === "true" : null,
-        p_abep: filters.abep !== "" ? filters.abep === "true" : null,
-        p_ranking: filters.ranking !== "" ? filters.ranking === "true" : null,
-        p_leciona: null,
-      });
-      if (error) throw error;
-      setData(result);
+      if (!temFiltro(filters)) {
+        setData(await getEstatisticas());
+      } else {
+        const [associadas, obras] = await Promise.all([getAssociadas(), getObras()]);
+        setData(calcular(aplicarFiltros(associadas, filters), obras));
+      }
     } catch {
       alert("Erro ao carregar estatísticas");
     } finally {
@@ -216,9 +218,6 @@ export const Dashboards = () => {
         </div>
 
         <div className="bg-white p-1 rounded-lg border border-[var(--border)] flex flex-wrap items-center">
-          <select value={filters.status_registro} onChange={(e) => setFilters({ ...filters, status_registro: e.target.value })} className={selectCls}>
-            <option value="">Status</option><option value="ATIVO">Ativos</option><option value="REVISAR">Revisar</option>
-          </select>
           <select value={filters.ibdp} onChange={(e) => setFilters({ ...filters, ibdp: e.target.value })} className={selectCls}>
             <option value="">IBDP</option><option value="true">Sim</option><option value="false">Não</option>
           </select>
@@ -232,7 +231,7 @@ export const Dashboards = () => {
             onChange={(e) => setFilters({ ...filters, uf: e.target.value.toUpperCase() })}
             className="w-14 px-2 py-2 bg-transparent text-[11px] font-semibold uppercase outline-none" />
           <button
-            onClick={() => setFilters({ uf: "", status_registro: "", ibdp: "", abep: "", ranking: "" })}
+            onClick={() => setFilters({ uf: "", ibdp: "", abep: "", ranking: "" })}
             className="px-3 py-2 text-[11px] font-semibold text-[var(--accent)] hover:underline"
           >
             Limpar

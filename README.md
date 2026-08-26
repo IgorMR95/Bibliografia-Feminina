@@ -3,8 +3,8 @@
 Aplicação React (Vite) + Tailwind para consulta, dashboards e alimentação da base de
 processualistas brasileiras e sua produção bibliográfica.
 
-> ⚠️ **O backend é o Supabase.** O frontend fala direto com ele (`src/lib/supabase.ts`):
-> tabelas via PostgREST, regras via RLS, e operações privilegiadas via Edge Functions.
+> ⚠️ **O site público lê arquivos estáticos, não o Supabase.** Veja "De onde vêm os
+> dados", no fim deste arquivo. O Supabase atende apenas o login e a área da equipe.
 >
 > Os arquivos `server.ts`, `src/server/`, `prisma/`, `seed.ts` e `scripts/import-excel.mjs`
 > são de uma arquitetura Express + Prisma que **não está mais em uso** e não roda em
@@ -44,7 +44,8 @@ npm run dev
 
 Home, Sobre, Metodologia e Quem Somos **não têm texto no código**: leem de `paginas`,
 e uma admin edita em **Administração → Textos do Site**, com prévia lado a lado. O que
-for publicado aparece no site na hora, sem novo deploy.
+for publicado entra no site na próxima vez que os dados forem regerados (`npm run
+gerar-dados`) e enviados.
 
 O markdown aceito é o mínimo necessário (`## título`, `**negrito**`, `*itálico*`,
 listas com `-`, `[link](url)`) e é renderizado por `src/lib/markdown.tsx`, que monta
@@ -138,3 +139,40 @@ Para colocar em produção (ex: Cloud Run, Render, Railway):
 npm run build
 npm start
 ```
+
+## 🗂 De onde vêm os dados
+
+O lado **público** do site (consulta de pessoas, busca de obras, gráficos e
+páginas institucionais) **não consulta o Supabase**. Ele lê arquivos estáticos,
+servidos pela CDN da Vercel:
+
+```
+dados/base-processualistas.xlsx     ← fonte da verdade, versionada aqui
+        │  npm run gerar-dados
+        ▼
+public/dados/associadas.json        383 processualistas  ·  66 KB comprimido
+public/dados/obras.json             6.823 obras          ·  441 KB (sob demanda)
+public/dados/estatisticas.json      agregados prontos    ·  1 KB
+public/dados/conteudo.json          textos e equipe      ·  6 KB
+```
+
+Para atualizar a base: substitua o `.xlsx`, rode `npm run gerar-dados`, confira o
+resumo impresso e faça commit. A Vercel publica em cerca de um minuto.
+
+**Por que não ler o `.xlsx` direto no navegador:** medido nesta base, o Excel
+custa 780 KB e ~150 ms de processamento (descompactar o zip e varrer 44 mil
+células de XML) contra 475 KB e ~30 ms do JSON. O `.xlsx` já é um zip, então
+ainda por cima não comprime de novo na rede.
+
+Os três arquivos são carregados sob demanda: quem abre a consulta de pessoas
+baixa 66 KB — a bibliografia só desce ao abrir a aba **Obras**.
+
+### O que continua no Supabase
+
+Só o que precisa de servidor: **login** e a **área da equipe** (editor de textos
+das páginas, gestão da equipe, importação de planilha). A estrutura do banco
+segue intacta e alimentada — nada foi apagado —, apenas deixou de ser consultada
+pelo site público.
+
+O editor de textos grava no Supabase; o que ele publica aparece no site quando os
+dados forem regerados e enviados, no mesmo ciclo da planilha.

@@ -13,7 +13,7 @@ import { Consulta } from "./pages/Consulta";
 import { Dashboards } from "./pages/Dashboards";
 import { Alimentacao } from "./pages/Alimentacao";
 import { Administracao } from "./pages/Administracao";
-import { DetalheAssociada } from "./pages/DetalheAssociada";
+import { FichaAssociada } from "./pages/FichaAssociada";
 import { Home } from "./pages/Home";
 import { Sobre } from "./pages/Sobre";
 import { Metodologia } from "./pages/Metodologia";
@@ -65,7 +65,7 @@ function AppRoutes() {
         {/* rota antiga, mantida para nao quebrar links ja divulgados */}
         <Route path="idealizadoras" element={<Navigate to="/quem-somos" replace />} />
         <Route path="consulta" element={<Consulta />} />
-        <Route path="consulta/:id" element={<DetalheAssociada />} />
+        <Route path="consulta/:id" element={<FichaAssociada />} />
         <Route path="dashboards" element={<Dashboards />} />
         <Route path="alimentacao" element={<ProtectedRoute><Alimentacao /></ProtectedRoute>} />
         <Route path="admin" element={<ProtectedRoute reqAdmin><Administracao /></ProtectedRoute>} />

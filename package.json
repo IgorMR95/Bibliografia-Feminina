@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "gerar-dados": "node scripts/gerar-dados.mjs",
     "dev:legacy": "tsx server.ts",
     "start": "node server.ts",
     "build": "vite build",
