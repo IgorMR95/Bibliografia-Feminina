@@ -39,10 +39,16 @@ export const Home = () => {
       </section>
 
       <section className="text-center !mt-10">
+        {/*
+          Mesmas características do título que abria a página antes do
+          banner: serif, negrito, no teal da marca. Como o nome do projeto
+          agora vem dentro da imagem, este é o h1 da página — a estrutura
+          de cabeçalhos continua tendo um.
+        */}
         {pagina?.subtitulo && (
-          <p className="text-[17px] text-[var(--text-muted)] max-w-2xl mx-auto leading-relaxed mb-8">
+          <h1 className="text-[2.5rem] md:text-[3.25rem] font-serif font-bold text-[var(--heading)] max-w-3xl mx-auto leading-[1.1] mb-6">
             {pagina.subtitulo}
-          </p>
+          </h1>
         )}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
