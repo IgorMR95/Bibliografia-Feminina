@@ -11,14 +11,12 @@ import { Layout } from "./components/Layout";
 import { Login } from "./pages/Login";
 import { Consulta } from "./pages/Consulta";
 import { Dashboards } from "./pages/Dashboards";
-import { Alimentacao } from "./pages/Alimentacao";
 import { Administracao } from "./pages/Administracao";
 import { FichaAssociada } from "./pages/FichaAssociada";
 import { Home } from "./pages/Home";
 import { Sobre } from "./pages/Sobre";
 import { Metodologia } from "./pages/Metodologia";
 import { QuemSomos } from "./pages/QuemSomos";
-import { AdminCrud } from "./pages/AdminCrud";
 
 function ProtectedRoute({ children, reqAdmin = false }: { children: ReactNode; reqAdmin?: boolean }) {
   const { user, loading } = useAuth();
@@ -67,9 +65,7 @@ function AppRoutes() {
         <Route path="consulta" element={<Consulta />} />
         <Route path="consulta/:id" element={<FichaAssociada />} />
         <Route path="dashboards" element={<Dashboards />} />
-        <Route path="alimentacao" element={<ProtectedRoute><Alimentacao /></ProtectedRoute>} />
         <Route path="admin" element={<ProtectedRoute reqAdmin><Administracao /></ProtectedRoute>} />
-        <Route path="admin/dados" element={<ProtectedRoute reqAdmin><AdminCrud /></ProtectedRoute>} />
       </Route>
     </Routes>
   );

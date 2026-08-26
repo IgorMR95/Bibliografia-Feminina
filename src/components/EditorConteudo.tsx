@@ -448,7 +448,9 @@ export const EditorConteudo = () => {
   return (
     <div className="space-y-6">
       <div className="bg-[var(--bg)] border border-[var(--border)] rounded-xl p-4 text-xs text-[var(--text-muted)]">
-        O que você publicar aqui aparece no site imediatamente, sem precisar de nova publicação do sistema.
+        O que você publicar aqui fica <strong>salvo na hora</strong>, mas o site público lê os
+        textos de um arquivo gerado a cada atualização da base — então a alteração só aparece
+        para os visitantes na próxima vez que os dados forem regerados e enviados ao repositório.
       </div>
 
       <div className="flex gap-2">

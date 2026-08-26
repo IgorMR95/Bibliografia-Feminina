@@ -1,0 +1,54 @@
+name: Gerar dados públicos
+
+# Roda quando a planilha muda (upload pelo painel ou commit direto) e
+# também sob demanda, quando só os textos do site foram editados.
+on:
+  push:
+    paths:
+      - "dados/**"
+      - "scripts/gerar-dados.mjs"
+  workflow_dispatch:
+    inputs:
+      motivo:
+        description: "Por que está republicando"
+        required: false
+        default: "atualização de conteúdo"
+
+# precisa poder commitar os JSONs gerados de volta
+permissions:
+  contents: write
+
+# um deploy de cada vez: dois uploads seguidos não podem gerar commits
+# concorrentes em cima do mesmo arquivo
+concurrency:
+  group: gerar-dados
+  cancel-in-progress: false
+
+jobs:
+  gerar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Gerar os arquivos públicos a partir da planilha
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: node scripts/gerar-dados.mjs
+
+      - name: Publicar se algo mudou
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/dados src/dadosVersao.ts
+          # sem mudança não há o que commitar, e "git commit" falharia
+          if git diff --cached --quiet; then
+            echo "Nada mudou nos dados gerados."
+            exit 0
+          fi
+          git commit -m "chore: regenerar dados públicos (${{ github.event.inputs.motivo || 'planilha atualizada' }})"
+          git push
