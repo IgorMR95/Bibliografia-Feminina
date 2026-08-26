@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Download } from "lucide-react";
 import * as xlsx from "xlsx";
-import { getAssociadas, Associada, semAcento } from "../lib/base";
+import { getAssociadas, getObras, Associada, Obra, semAcento } from "../lib/base";
 import { BuscaObras } from "../components/BuscaObras";
 
 const POR_PAGINA = 15;
@@ -28,6 +28,18 @@ const BuscaPessoas = () => {
   const [ranking, setRanking] = useState("");
   const [formacao, setFormacao] = useState("");
 
+  /**
+   * A busca também alcança o conteúdo das obras: quem procura "coisa
+   * julgada" quer as autoras que escreveram sobre isso, não só quem tem
+   * essas palavras no nome.
+   *
+   * A bibliografia pesa 441 KB contra os 66 KB da lista de pessoas, então
+   * só é baixada quando alguém realmente busca — e uma vez só. Até ela
+   * chegar, a busca por nome já responde.
+   */
+  const [obras, setObras] = useState<Obra[] | null>(null);
+  const [buscandoObras, setBuscandoObras] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,12 +49,35 @@ const BuscaPessoas = () => {
       .finally(() => setCarregando(false));
   }, []);
 
+  useEffect(() => {
+    if (busca.trim().length < 3 || obras || buscandoObras) return;
+    setBuscandoObras(true);
+    getObras()
+      .then(setObras)
+      .catch(() => setObras([]))
+      .finally(() => setBuscandoObras(false));
+  }, [busca, obras, buscandoObras]);
+
+  /** quantas obras de cada autora casam com o termo */
+  const acertosPorAutora = useMemo(() => {
+    const termo = semAcento(busca.trim());
+    const m = new Map<string, number>();
+    if (!termo || !obras) return m;
+    for (const o of obras) {
+      if (semAcento(o.citacao).includes(termo)) {
+        m.set(o.autorId, (m.get(o.autorId) ?? 0) + 1);
+      }
+    }
+    return m;
+  }, [obras, busca]);
+
   const filtradas = useMemo(() => {
     const termo = semAcento(busca.trim());
     return todas.filter((a) => {
       if (termo) {
         const alvo = semAcento(`${a.nome} ${a.email ?? ""} ${a.instituicao ?? ""}`);
-        if (!alvo.includes(termo)) return false;
+        // entra por dado próprio ou por ter obra sobre o assunto
+        if (!alvo.includes(termo) && !acertosPorAutora.has(a.id)) return false;
       }
       if (uf && (a.uf ?? "").toUpperCase() !== uf.toUpperCase()) return false;
       if (ibdp !== "" && a.ibdp !== (ibdp === "true")) return false;
@@ -55,7 +90,7 @@ const BuscaPessoas = () => {
       if (formacao === "livre_docente" && !a.livreDocente) return false;
       return true;
     });
-  }, [todas, busca, uf, ibdp, abep, docente, ranking, formacao]);
+  }, [todas, busca, uf, ibdp, abep, docente, ranking, formacao, acertosPorAutora]);
 
   // qualquer mudança de critério volta para a primeira página
   useEffect(() => { setPagina(1); }, [busca, uf, ibdp, abep, docente, ranking, formacao]);
@@ -117,13 +152,20 @@ const BuscaPessoas = () => {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Nome, e-mail, instituição…"
+                placeholder="Nome, instituição ou assunto de uma obra…"
                 className={`${campoCls} pl-10`}
                 value={busca}
                 onChange={(e) => setBusca(e.target.value)}
               />
               <Search className="w-4 h-4 text-[var(--text-muted)] absolute left-3 top-3" />
             </div>
+            <p className="text-[11px] text-[var(--text-muted)] mt-1.5 h-4">
+              {buscandoObras
+                ? "buscando também nas obras…"
+                : busca.trim().length >= 3 && acertosPorAutora.size > 0
+                ? `${acertosPorAutora.size} ${acertosPorAutora.size === 1 ? "autora escreveu" : "autoras escreveram"} sobre isso`
+                : ""}
+            </p>
           </div>
 
           <div className="w-20">
@@ -213,6 +255,14 @@ const BuscaPessoas = () => {
                       {a.incompleto && (
                         <span className="ml-2 px-1.5 py-0.5 text-[9px] rounded bg-[var(--warning-bg)] text-[var(--warning)] font-bold uppercase">
                           incompleto
+                        </span>
+                      )}
+                      {/* diz por que a pessoa apareceu quando o termo não
+                          está no nome dela, mas nas obras que escreveu */}
+                      {acertosPorAutora.has(a.id) && (
+                        <span className="ml-2 px-1.5 py-0.5 text-[9px] rounded bg-[var(--nav-active)] text-[var(--accent)] font-bold uppercase whitespace-nowrap">
+                          {acertosPorAutora.get(a.id)}{" "}
+                          {acertosPorAutora.get(a.id) === 1 ? "obra" : "obras"}
                         </span>
                       )}
                     </td>
