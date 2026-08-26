@@ -1,43 +1,56 @@
 /*
- * Identidade visual alinhada ao site do grupo em sites.usp.br.
+ * Identidade visual da Bibliografia Processual Feminina.
  *
- * Fontes e cores foram tiradas do proprio tema USP_id:
- *   - titulos em Open Sans (no CSS deles o Bitter esta comentado)
- *   - texto em Source Sans Pro
- *   - #014955 petroleo institucional, #1094ab turquesa dos titulos,
- *     #64c4d2 da barra de navegacao, #ea9629 de destaque, #141412 no texto
+ * As cores saem da logo do grupo, medidas no arquivo original:
+ *   #258989 fundo do banner  ·  #C57250 terracota  ·  #EDE6D6 bege
+ * A barra de navegacao usa o teal exato do banner, para a marca se apoiar
+ * na cor da barra em vez de parecer uma figura colada por cima.
  *
- * O turquesa (#1094ab) tem contraste ~3.4:1 sobre branco: serve para
- * titulo grande, nao para texto pequeno nem para fundo de botao. Por isso
- * o --accent (botoes, links, rotulos) e' o petroleo escuro, que da ~10:1.
+ * As fontes seguem as do tema USP_id de sites.usp.br: Open Sans nos
+ * titulos (no CSS deles o Bitter esta comentado) e Source Sans no texto.
+ *
+ * Contraste: o teal do banner da 4.2:1 sobre branco, o que serve a titulo
+ * grande mas nao a texto pequeno nem a fundo de botao — dai o --accent ser
+ * um teal um pouco mais fundo, com 5.5:1. Sobre a propria barra, o texto e'
+ * branco.
  */
 
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap');
 @import "tailwindcss";
 
 :root {
-  --bg: #F6FAFB;
+  --bg: #F6FAF9;
   --sidebar: #FFFFFF;
 
-  /* petroleo institucional: botoes, links e rotulos */
-  --accent: #014955;
-  --accent-hover: #013640;
+  /*
+   * Cores medidas na logo do grupo (src/assets, banner original):
+   *   #258989 fundo   ·   #C57250 terracota   ·   #EDE6D6 bege
+   * A barra de navegação usa o teal exato do banner, para a marca não
+   * parecer uma figura colada sobre outra cor.
+   */
+  --logo-teal: #258989;
+  --logo-terracota: #C57250;
+  --logo-bege: #EDE6D6;
 
-  /* turquesa dos titulos da USP */
-  --heading: #1094ab;
+  /* teal um pouco mais fundo para texto e botão: 5.5:1 sobre branco,
+     enquanto o teal do banner fica em 4.2:1 e só serve a título grande */
+  --accent: #1F7373;
+  --accent-hover: #175C5C;
 
-  /* ciano da barra de navegacao */
-  --navbar: #64c4d2;
-  --navbar-hover: #7ccfdb;
+  --heading: #258989;
+
+  --navbar: #258989;
+  --navbar-hover: rgba(255, 255, 255, 0.14);
   --navbar-active: #FFFFFF;
+  --navbar-text: #FFFFFF;
 
-  /* ambar de destaque */
-  --highlight: #ea9629;
-  --highlight-bg: #FDF3E3;
+  /* terracota da logo no lugar do âmbar */
+  --highlight: #C57250;
+  --highlight-bg: #F9EDE7;
 
-  --text-main: #141412;
-  --text-muted: #5F6B6E;
-  --border: #DCE8EB;
+  --text-main: #16211F;
+  --text-muted: #5C6B69;
+  --border: #DBE7E4;
 
   --success: #2E7D5B;
   --success-bg: #E6F4EE;
@@ -46,9 +59,9 @@
   --error: #A02B18;
   --error-bg: #FBE9E6;
 
-  --nav-active: #E2F3F6;
-  --nav-hover: #EFF9FA;
-  --row-hover: #F3FAFB;
+  --nav-active: #E1F1EF;
+  --nav-hover: #EEF8F6;
+  --row-hover: #F2FAF8;
 }
 
 @theme {
@@ -83,13 +96,13 @@ body {
 
 /* o tema anterior era todo shadow-sm; aqui a hierarquia vem da borda */
 .shadow-sm {
-  box-shadow: 0 1px 2px rgb(1 73 85 / 0.04) !important;
+  box-shadow: 0 1px 2px rgb(31 115 115 / 0.05) !important;
 }
 .shadow-md {
-  box-shadow: 0 2px 8px rgb(1 73 85 / 0.06) !important;
+  box-shadow: 0 2px 8px rgb(31 115 115 / 0.07) !important;
 }
 .shadow-lg {
-  box-shadow: 0 4px 16px rgb(1 73 85 / 0.08) !important;
+  box-shadow: 0 4px 16px rgb(31 115 115 / 0.09) !important;
 }
 
 /*

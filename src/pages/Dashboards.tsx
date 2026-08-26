@@ -7,19 +7,22 @@ import {
 } from "recharts";
 
 /**
- * Paleta categórica validada para a superfície branca dos cartões
- * (validate_palette.js, modo light, surface #ffffff):
- *   pior par adjacente CVD ΔE 13.5 · visão normal ΔE 24.7 · todas na banda
- *   de luminosidade e acima do piso de croma.
- * O âmbar fica em 2.36:1 de contraste — abaixo de 3:1 —, o que exige rótulo
- * visível; todos os gráficos aqui trazem o valor escrito, que é o alívio
- * previsto. Não reordene sem rodar o validador de novo: a ordem é o
- * mecanismo de segurança para daltonismo, não escolha estética.
+ * Paleta categórica derivada da logo do grupo e validada para a superfície
+ * branca dos cartões (validate_palette.js, modo light, surface #ffffff):
+ *   pior par adjacente CVD ΔE 13.2 · visão normal ΔE 18.5 · todas na banda
+ *   de luminosidade, acima do piso de croma e acima de 3:1 de contraste.
+ *
+ * O teal e o terracota da logo (#258989 e #C57250) não entram como estão:
+ * medidos, o teal da marca tem croma 0.088, abaixo do piso, e numa série
+ * categórica leria como cinza. Os dois primeiros slots são as mesmas
+ * famílias um pouco mais saturadas — parentes da marca, legíveis no
+ * gráfico. Não reordene sem rodar o validador: a ordem é o mecanismo de
+ * segurança para daltonismo, não escolha estética.
  */
-const SERIES = ["#1094ab", "#ea9629", "#a34fa8", "#12a06a", "#3d6fd6", "#d9453f"];
+const SERIES = ["#0a9191", "#c05f38", "#a34fa8", "#12a06a", "#3d6fd6", "#d9453f"];
 
-/** cor única para séries de um valor só — o turquesa institucional */
-const UNICA = "#1094ab";
+/** cor única para séries de um valor só — o teal da identidade */
+const UNICA = "#0a9191";
 
 /**
  * A cor tem de seguir a categoria, nunca a posição dela no ranking: se um
