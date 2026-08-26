@@ -42,15 +42,6 @@ const ORDEM_ATUACAO = [
   "Membro de Câmara Arb.",
 ];
 
-const ORDEM_TIPO_OBRA = [
-  "Artigo",
-  "Capitulo de Livro",
-  "Livro",
-  "Coluna em Jornais e Sites",
-  "Anais de Eventos",
-  "Org. ou Coord.",
-];
-
 /**
  * Rótulo do agregado da cauda. Não pode ser "Outros": existe a categoria
  * real "Outros Setores" na base, e as duas juntas na mesma legenda ficam
@@ -193,6 +184,11 @@ export const Dashboards = () => {
     parcial: Number(i.label) >= anoAtual,
   }));
   const temParcial = anoData.some((a: any) => a.parcial);
+  // trabalhos de titulação não seguem o recorte de 2015: há teses dos anos
+  // 1970 em diante, que somam no total mas ficam fora deste gráfico
+  const foraDoRecorte = (data.por_ano || [])
+    .filter((i: any) => Number(i.label) < ANO_INICIAL)
+    .reduce((s: number, i: any) => s + Number(i.valor), 0);
 
   const kpis = [
     { t: "Processualistas", v: total, s: "na base" },
@@ -344,7 +340,11 @@ export const Dashboards = () => {
           <Cartao
             titulo="Produção ao longo do tempo"
             nota={
-              `Obras publicadas por ano, a partir de ${ANO_INICIAL} — recorte adotado pela pesquisa.` +
+              `Obras publicadas por ano, a partir de ${ANO_INICIAL} — recorte adotado pela pesquisa` +
+              (foraDoRecorte > 0
+                ? `, que não vale para dissertações e teses: ${fmt(foraDoRecorte)} delas foram defendidas antes disso e não aparecem aqui`
+                : "") +
+              `.` +
               (temParcial ? ` O ano de ${anoAtual} está em curso e aparece incompleto.` : "")
             }
           >
@@ -389,30 +389,30 @@ export const Dashboards = () => {
           </Cartao>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {/* tipologia — rosca */}
+            {/*
+              Barra, não rosca: com as dissertações e teses somadas são 9
+              tipos, e a paleta categórica valida 6 — a partir daí as cores
+              teriam de ciclar, que é justamente o que a torna insegura para
+              daltonismo. Em barra a comparação não depende de cor nenhuma.
+            */}
             <Cartao titulo="Tipologia das Obras" nota={`Percentual sobre as ${fmt(totalObras)} obras mapeadas.`}>
               <div className="h-[290px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={tipoData}
-                      cx="38%" cy="50%"
-                      innerRadius={54} outerRadius={94}
-                      paddingAngle={2}
-                      dataKey="value"
-                      stroke="#fff" strokeWidth={2}
-                      label={({ pct }: any) => (pct >= 6 ? `${pct.toFixed(0)}%` : "")}
-                      labelLine={false}
-                    >
-                      {tipoData.map((d) => <Cell key={d.name} fill={corDe(d.name, ORDEM_TIPO_OBRA)} />)}
-                    </Pie>
-                    <Tooltip content={<CaixaTooltip sufixo="obras" />} />
-                    <Legend
-                      layout="vertical" align="right" verticalAlign="middle"
-                      iconType="circle" iconSize={9}
-                      wrapperStyle={{ fontSize: "12px", lineHeight: "1.7", color: "var(--text-muted)", paddingLeft: 8 }}
+                  <BarChart data={tipoData} layout="vertical" margin={{ left: 8, right: 52 }}>
+                    <XAxis type="number" hide />
+                    <YAxis
+                      type="category" dataKey="name" axisLine={false} tickLine={false}
+                      tick={{ fill: TINTA, fontSize: 11 }} width={150}
+                      tickFormatter={(v: string) =>
+                        v.replace("Dissertação de ", "").replace("Tese de ", "")
+                         .replace("Coluna em Jornais e Sites", "Colunas")
+                         .replace("Capitulo de Livro", "Capítulo de Livro")}
                     />
-                  </PieChart>
+                    <Tooltip cursor={{ fill: "var(--row-hover)" }} content={<CaixaTooltip sufixo="obras" />} />
+                    <Bar dataKey="value" fill={UNICA} radius={[0, 4, 4, 0]} maxBarSize={18}>
+                      <LabelList dataKey="rotulo" position="right" style={{ fill: TINTA, fontSize: 11, fontWeight: 600 }} />
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
             </Cartao>

@@ -463,13 +463,9 @@ function montarBase() {
 /* estatísticas — pré-calculadas, para a página não somar 6.800 obras  */
 /* ------------------------------------------------------------------ */
 
-function montarEstatisticas(associadas, todasAsObras) {
-  // As dissertações e teses entram na busca, mas ficam fora das contagens:
-  // a metodologia do grupo conta a produção bibliográfica (6.823 obras) em
-  // separado dos trabalhos de titulação, e misturar as duas mudaria um
-  // número já publicado.
-  const obras = todasAsObras.filter((o) => o.origem !== "titulacao");
-
+function montarEstatisticas(associadas, obras) {
+  // Dissertações e teses contam junto com o resto: são espécies de obra,
+  // não uma categoria à parte. O total de produções é o total de obras.
   const contar = (itens, chaveDe) => {
     const m = new Map();
     for (const i of itens) {
