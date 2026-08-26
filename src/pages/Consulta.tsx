@@ -3,11 +3,12 @@ import { supabase } from "../lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { Search, Trash2, Download } from "lucide-react";
 import { useAuth } from "../lib/AuthContext";
+import { BuscaObras } from "../components/BuscaObras";
 import * as xlsx from "xlsx";
 
 const LIMIT = 15;
 
-export const Consulta = () => {
+const BuscaPessoas = () => {
   const [data, setData] = useState<any[]>([]);
   const [meta, setMeta] = useState<any>({ page: 1, total: 0, totalPages: 1 });
   const [loading, setLoading] = useState(true);
@@ -350,6 +351,37 @@ export const Consulta = () => {
           </div>
         </div>
       </div>
+    </div>
+  );
+};
+
+/**
+ * A consulta tem duas entradas: por pessoa (quem sao as processualistas) e
+ * por obra (o que foi escrito sobre um assunto). A segunda e' o caminho de
+ * quem procura bibliografia sobre um tema e so depois chega nas autoras.
+ */
+export const Consulta = () => {
+  const [aba, setAba] = useState<"pessoas" | "obras">("pessoas");
+
+  const abaCls = (ativa: boolean) =>
+    `px-5 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors ${
+      ativa
+        ? "border-[var(--accent)] text-[var(--accent)]"
+        : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-main)]"
+    }`;
+
+  return (
+    <div className="space-y-5">
+      <div className="flex border-b border-[var(--border)]">
+        <button className={abaCls(aba === "pessoas")} onClick={() => setAba("pessoas")}>
+          Processualistas
+        </button>
+        <button className={abaCls(aba === "obras")} onClick={() => setAba("obras")}>
+          Obras
+        </button>
+      </div>
+
+      {aba === "pessoas" ? <BuscaPessoas /> : <BuscaObras />}
     </div>
   );
 };
