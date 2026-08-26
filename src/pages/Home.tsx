@@ -39,6 +39,11 @@ export const Home = () => {
       </section>
 
       <section className="text-center !mt-10">
+        {pagina?.subtitulo && (
+          <p className="text-[17px] text-[var(--text-muted)] max-w-2xl mx-auto leading-relaxed mb-8">
+            {pagina.subtitulo}
+          </p>
+        )}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             to="/consulta"
