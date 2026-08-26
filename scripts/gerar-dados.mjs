@@ -405,16 +405,71 @@ function montarBase() {
     id: `o${i}`,
     autorId: idPorChave.get(p.autorChave),
     tipo: p.tipo, citacao: p.citacao, ano: p.ano, area: p.area,
+    link: null,
+    origem: "bibliografia",
   })).filter((o) => o.autorId);
 
-  return { associadas, obras: obrasFinais, avisos, descartadas, orfas: orfas.size };
+  // Dissertações e teses também são obras, e já estão descritas na aba 1
+  // (título, ano, faculdade, área e link). São derivadas daqui em vez de
+  // digitadas de novo na aba 2: repetir o dado criaria duas versões do
+  // mesmo trabalho, que divergem na primeira correção feita só de um lado.
+  const academicas = [];
+  const TITULACOES = [
+    ["mestrado", "Dissertação de Mestrado", "Dissertação (Mestrado)"],
+    ["doutorado", "Tese de Doutorado", "Tese (Doutorado)"],
+    ["livreDocencia", "Tese de Livre-Docência", "Tese (Livre-Docência)"],
+  ];
+
+  for (const a of associadas) {
+    for (const [campo, tipo, mencao] of TITULACOES) {
+      const t = a[campo];
+      if (!t?.titulo) continue;
+
+      // O nome fica como está na planilha. Inverter para "SOBRENOME, Nome"
+      // erra em nome composto e sobrenome estrangeiro, e numa citação
+      // acadêmica isso é pior que o formato menos convencional.
+      // parte dos campos já vem com pontuação final na planilha; sem
+      // aparar, a citação sai com "…, Brasil., 1973."
+      const limpar = (v) => String(v ?? "").trim().replace(/[.,;]+$/, "").trim();
+      const titulo = limpar(t.titulo);
+      const complemento = [limpar(t.faculdade), t.ano].filter(Boolean).join(", ");
+
+      const citacao = complemento
+        ? `${a.nome}. ${titulo}. ${mencao} — ${complemento}.`
+        : `${a.nome}. ${titulo}. ${mencao}.`;
+
+      academicas.push({
+        id: `t${academicas.length}`,
+        autorId: a.id,
+        tipo,
+        citacao,
+        ano: t.ano ?? "s/d",
+        area: area(t.area),
+        link: t.link ?? null,
+        origem: "titulacao",
+      });
+    }
+  }
+
+  return {
+    associadas,
+    obras: [...obrasFinais, ...academicas],
+    avisos, descartadas, orfas: orfas.size,
+    academicas: academicas.length,
+  };
 }
 
 /* ------------------------------------------------------------------ */
 /* estatísticas — pré-calculadas, para a página não somar 6.800 obras  */
 /* ------------------------------------------------------------------ */
 
-function montarEstatisticas(associadas, obras) {
+function montarEstatisticas(associadas, todasAsObras) {
+  // As dissertações e teses entram na busca, mas ficam fora das contagens:
+  // a metodologia do grupo conta a produção bibliográfica (6.823 obras) em
+  // separado dos trabalhos de titulação, e misturar as duas mudaria um
+  // número já publicado.
+  const obras = todasAsObras.filter((o) => o.origem !== "titulacao");
+
   const contar = (itens, chaveDe) => {
     const m = new Map();
     for (const i of itens) {
@@ -511,7 +566,7 @@ async function principal() {
   fs.mkdirSync(SAIDA, { recursive: true });
   console.log(`lendo ${path.relative(RAIZ, PLANILHA)}…`);
 
-  const { associadas, obras, avisos, descartadas, orfas } = montarBase();
+  const { associadas, obras, avisos, descartadas, orfas, academicas } = montarBase();
   const estat = montarEstatisticas(associadas, obras);
   const conteudo = await montarConteudo();
 
@@ -549,6 +604,7 @@ async function principal() {
     origem: path.basename(PLANILHA),
     associadas: associadas.length,
     obras: obras.length,
+    obras_academicas: academicas,
     incompletas: associadas.filter((a) => a.incompleto).length,
   });
 

@@ -176,3 +176,17 @@ pelo site público.
 
 O editor de textos grava no Supabase; o que ele publica aparece no site quando os
 dados forem regerados e enviados, no mesmo ciclo da planilha.
+
+### Dissertações e teses na busca
+
+A aba 1 da planilha já descreve os trabalhos de titulação (título, ano, faculdade,
+área e link). Eles **não são digitados de novo** na aba de bibliografia: o gerador os
+deriva de lá e cria as entradas correspondentes — *Dissertação de Mestrado*, *Tese de
+Doutorado* e *Tese de Livre-Docência* —, somando 581 obras às 6.823 da aba 2.
+
+Repetir o dado nas duas abas criaria duas versões do mesmo trabalho, que divergem na
+primeira correção feita só de um lado.
+
+As contagens das **estatísticas continuam somando apenas a aba 2** (6.823): a
+metodologia do grupo trata a produção bibliográfica em separado dos trabalhos de
+titulação, e misturar as duas mudaria um número já publicado.

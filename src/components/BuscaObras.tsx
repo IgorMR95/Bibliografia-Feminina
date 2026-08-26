@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, ExternalLink } from "lucide-react";
 import { getObras, getAssociadas, Obra, Associada, semAcento } from "../lib/base";
 
 /**
@@ -21,6 +21,8 @@ const AREAS = [
 const TIPOS = [
   "Artigo", "Capitulo de Livro", "Livro",
   "Coluna em Jornais e Sites", "Anais de Eventos", "Org. ou Coord.",
+  // derivados da aba 1: a titulação também é obra
+  "Dissertação de Mestrado", "Tese de Doutorado", "Tese de Livre-Docência",
 ];
 
 /** destaca o trecho procurado dentro da citação, ignorando acento e caixa */
@@ -261,6 +263,16 @@ export const BuscaObras = () => {
                   <span className="inline-flex px-2 py-0.5 rounded border border-[var(--border)] text-[var(--text-muted)]">
                     {o.area}
                   </span>
+                  {o.link && (
+                    <a
+                      href={o.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[var(--accent)] font-semibold hover:underline"
+                    >
+                      <ExternalLink className="w-3 h-3" /> texto completo
+                    </a>
+                  )}
                 </div>
               </li>
             );

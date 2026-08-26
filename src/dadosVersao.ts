@@ -1,2 +1,2 @@
 // gerado por scripts/gerar-dados.mjs — não editar à mão
-export const VERSAO_DADOS = "mtaepkd0";
+export const VERSAO_DADOS = "mtaiswds";

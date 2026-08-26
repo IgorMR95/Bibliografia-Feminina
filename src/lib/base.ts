@@ -53,6 +53,14 @@ export interface Obra {
   citacao: string;
   ano: string;
   area: string;
+  /** link para o texto completo — hoje só as dissertações e teses têm */
+  link: string | null;
+  /**
+   * "bibliografia" vem da aba 2 da planilha; "titulacao" é derivada da
+   * aba 1 (dissertações e teses). As duas aparecem na busca, mas só a
+   * primeira entra nas contagens das estatísticas.
+   */
+  origem: "bibliografia" | "titulacao";
 }
 
 export interface Contagem { label: string; valor: number }
