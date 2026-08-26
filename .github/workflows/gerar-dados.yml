@@ -5,8 +5,10 @@ name: Gerar dados públicos
 on:
   push:
     paths:
+      # Só a planilha. Mudanças no próprio gerador não disparam: quem edita
+      # o script já regenera e commita os dados no mesmo passo, e a Action
+      # entraria em cima disso criando conflito nos arquivos gerados.
       - "dados/**"
-      - "scripts/gerar-dados.mjs"
   workflow_dispatch:
     inputs:
       motivo:
