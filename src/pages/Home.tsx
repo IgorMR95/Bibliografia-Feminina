@@ -23,12 +23,12 @@ export const Home = () => {
     <div className="max-w-6xl mx-auto space-y-16 pb-20 fade-in">
       {/*
         A abertura é o próprio banner do grupo, no lugar do título escrito:
-        ele já traz o nome, o selo da USP e o brasão da Faculdade. Como o
-        fundo do banner é o mesmo teal da barra de navegação, a imagem
-        aparece encostada no topo, sem respiro, para as duas se emendarem
-        numa faixa só em vez de a imagem flutuar sobre o fundo claro.
+        ele já traz o nome, o selo da USP e o brasão da Faculdade.
+        O respiro acima e abaixo da imagem é o mesmo (mt-10), para ela ficar
+        centrada entre a barra de navegação e os botões, e não colada em uma
+        das pontas.
       */}
-      <section className="-mx-4 sm:-mx-6 lg:-mx-8">
+      <section className="mt-10 -mx-4 sm:-mx-6 lg:-mx-8">
         <img
           src={banner}
           alt="Bibliografia Processual Feminina — grupo de pesquisa da Faculdade de Direito da Universidade de São Paulo"
@@ -39,11 +39,6 @@ export const Home = () => {
       </section>
 
       <section className="text-center !mt-10">
-        {pagina?.subtitulo && (
-          <p className="text-[17px] text-[var(--text-muted)] max-w-2xl mx-auto leading-relaxed mb-8">
-            {pagina.subtitulo}
-          </p>
-        )}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             to="/consulta"
