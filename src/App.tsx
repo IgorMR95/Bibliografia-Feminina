@@ -12,8 +12,7 @@ import { Login } from "./pages/Login";
 import { Consulta } from "./pages/Consulta";
 import { Dashboards } from "./pages/Dashboards";
 import { Administracao } from "./pages/Administracao";
-import { Alimentacao } from "./pages/Alimentacao";
-import { AdminCrud } from "./pages/AdminCrud";
+import { Dados } from "./pages/Dados";
 import { FichaAssociada } from "./pages/FichaAssociada";
 import { Home } from "./pages/Home";
 import { Sobre } from "./pages/Sobre";
@@ -67,9 +66,11 @@ function AppRoutes() {
         <Route path="consulta" element={<Consulta />} />
         <Route path="consulta/:id" element={<FichaAssociada />} />
         <Route path="dashboards" element={<Dashboards />} />
-        <Route path="alimentacao" element={<ProtectedRoute><Alimentacao /></ProtectedRoute>} />
+        <Route path="dados" element={<ProtectedRoute><Dados /></ProtectedRoute>} />
         <Route path="admin" element={<ProtectedRoute reqAdmin><Administracao /></ProtectedRoute>} />
-        <Route path="admin/dados" element={<ProtectedRoute reqAdmin><AdminCrud /></ProtectedRoute>} />
+        {/* endereços antigos das telas que viraram abas de /dados */}
+        <Route path="alimentacao" element={<Navigate to="/dados" replace />} />
+        <Route path="admin/dados" element={<Navigate to="/dados" replace />} />
       </Route>
     </Routes>
   );

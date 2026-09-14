@@ -4,13 +4,20 @@ import { callEdgeFunction } from "../lib/supabase";
 import { useAuth } from "../lib/AuthContext";
 import { UserPlus, Clock } from "lucide-react";
 import { EditorConteudo } from "../components/EditorConteudo";
-import { ImportarBase } from "../components/ImportarBase";
 
+/**
+ * Administração cuida de quem entra e do que o visitante lê — acesso,
+ * textos das páginas e a trilha do que foi feito na base.
+ *
+ * Mexer nos dados em si é a aba Dados. A importação de planilha, que
+ * morava aqui como "Substituir Base", virou "Alimentação em lote" lá:
+ * é alimentação, não administração, e o nome antigo prometia uma
+ * substituição integral que deixou de ser o comportamento padrão.
+ */
 const TABS = {
   usuarios: "Usuários",
   conteudo: "Textos do Site",
   auditoria: "Histórico de Alimentação",
-  importar: "Substituir Base (Planilha)",
 } as const;
 
 export const Administracao = () => {
@@ -107,7 +114,6 @@ export const Administracao = () => {
       </div>
 
       {activeTab === "conteudo" && <EditorConteudo />}
-      {activeTab === "importar" && <ImportarBase />}
 
       {activeTab === "usuarios" && (
         <div className="bg-white rounded-xl border border-[var(--border)] shadow-sm overflow-hidden">

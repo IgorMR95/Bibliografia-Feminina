@@ -3,8 +3,16 @@ import { supabase } from "../lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/AuthContext";
 import { Eye, Trash2, Edit, Plus, Search, X, Save } from "lucide-react";
-import * as xlsx from "xlsx";
-import { AvisoDemonstracao } from "../components/AvisoDemonstracao";
+import { baixarXlsx, deRegistros } from "../lib/xlsx";
+
+/**
+ * Excluir é irreversível e some com as obras junto (a chave estrangeira
+ * é ON DELETE CASCADE). Anotadora cadastra e corrige; apagar é de ADMIN.
+ */
+const SoAdmin = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useAuth();
+  return user?.role === "ADMIN" ? <>{children}</> : null;
+};
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -120,7 +128,7 @@ const AssociadasTab = () => {
                   <td className="px-4 py-3 text-right space-x-2">
                     <button onClick={() => navigate(`/consulta/${row.id}`)} className="p-1 text-[var(--text-muted)] hover:text-blue-600 transition" title="Ver detalhes"><Eye className="w-4 h-4" /></button>
                     <button onClick={() => openEdit(row)} className="p-1 text-[var(--text-muted)] hover:text-[var(--accent)] transition" title="Editar"><Edit className="w-4 h-4" /></button>
-                    <button onClick={() => handleDelete(row.id)} className="p-1 text-[var(--text-muted)] hover:text-[var(--error)] transition" title="Excluir"><Trash2 className="w-4 h-4" /></button>
+                    <SoAdmin><button onClick={() => handleDelete(row.id)} className="p-1 text-[var(--text-muted)] hover:text-[var(--error)] transition" title="Excluir"><Trash2 className="w-4 h-4" /></button></SoAdmin>
                   </td>
                 </tr>
               ))}
@@ -326,7 +334,7 @@ const ProducoesTab = () => {
                     <td className="px-4 py-3 whitespace-nowrap">{row.area_processo}</td>
                     <td className="px-4 py-3 text-right space-x-2">
                       <button onClick={() => { setEditing(row); setEditForm({ ...row }); }} className="p-1 text-[var(--text-muted)] hover:text-[var(--accent)]"><Edit className="w-4 h-4" /></button>
-                      <button onClick={() => handleDelete(row.id)} className="p-1 text-[var(--text-muted)] hover:text-[var(--error)]"><Trash2 className="w-4 h-4" /></button>
+                      <SoAdmin><button onClick={() => handleDelete(row.id)} className="p-1 text-[var(--text-muted)] hover:text-[var(--error)]"><Trash2 className="w-4 h-4" /></button></SoAdmin>
                     </td>
                   </tr>
                 ))}
@@ -440,7 +448,7 @@ const VinculosTab = () => {
                       </button>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button onClick={() => handleDelete(row.id)} className="p-1 text-[var(--text-muted)] hover:text-[var(--error)]"><Trash2 className="w-4 h-4" /></button>
+                      <SoAdmin><button onClick={() => handleDelete(row.id)} className="p-1 text-[var(--text-muted)] hover:text-[var(--error)]"><Trash2 className="w-4 h-4" /></button></SoAdmin>
                     </td>
                   </tr>
                 ))}
@@ -505,7 +513,7 @@ const NotasTab = () => {
                   </div>
                   <p className="text-xs text-[var(--text-muted)] whitespace-pre-wrap">{row.texto}</p>
                 </div>
-                <button onClick={() => handleDelete(row.id)} className="p-1 text-[var(--text-muted)] hover:text-[var(--error)] flex-shrink-0"><Trash2 className="w-4 h-4" /></button>
+                <SoAdmin><button onClick={() => handleDelete(row.id)} className="p-1 text-[var(--text-muted)] hover:text-[var(--error)] flex-shrink-0"><Trash2 className="w-4 h-4" /></button></SoAdmin>
               </div>
             ))}
         </div>
@@ -523,47 +531,33 @@ const NotasTab = () => {
 
 // ── Export All ────────────────────────────────────────────────────────────────
 
+/** baixa tudo o que alimenta o site público, numa planilha de três abas */
+const tudoDe = async (tabela: string, filtrar?: (q: any) => any) => {
+  const linhas: any[] = [];
+  for (let pg = 0; ; pg++) {
+    let q = supabase.from(tabela).select("*").range(pg * 1000, pg * 1000 + 999);
+    if (filtrar) q = filtrar(q);
+    const { data } = await q;
+    if (!data || data.length === 0) break;
+    linhas.push(...data);
+    if (data.length < 1000) break;
+  }
+  return linhas;
+};
+
 const exportAll = async () => {
   try {
-    const wb = xlsx.utils.book_new();
+    const [assoc, vinc, prod] = await Promise.all([
+      tudoDe("associadas", (q) => q.is("deletado_em", null)),
+      tudoDe("vinculos_docentes"),
+      tudoDe("producoes_bibliograficas"),
+    ]);
 
-    // Sheet 1: Associadas
-    let all: any[] = [];
-    let pg = 0;
-    while (true) {
-      const { data } = await supabase.from("associadas").select("*").is("deletado_em", null).range(pg * 1000, pg * 1000 + 999);
-      if (!data || data.length === 0) break;
-      all.push(...data);
-      if (data.length < 1000) break;
-      pg++;
-    }
-    xlsx.utils.book_append_sheet(wb, xlsx.utils.json_to_sheet(all), "Associadas");
-
-    // Sheet 2: Vínculos
-    let vinc: any[] = [];
-    pg = 0;
-    while (true) {
-      const { data } = await supabase.from("vinculos_docentes").select("*").range(pg * 1000, pg * 1000 + 999);
-      if (!data || data.length === 0) break;
-      vinc.push(...data);
-      if (data.length < 1000) break;
-      pg++;
-    }
-    xlsx.utils.book_append_sheet(wb, xlsx.utils.json_to_sheet(vinc), "Vinculos_Docentes");
-
-    // Sheet 3: Produções
-    let prod: any[] = [];
-    pg = 0;
-    while (true) {
-      const { data } = await supabase.from("producoes_bibliograficas").select("*").range(pg * 1000, pg * 1000 + 999);
-      if (!data || data.length === 0) break;
-      prod.push(...data);
-      if (data.length < 1000) break;
-      pg++;
-    }
-    xlsx.utils.book_append_sheet(wb, xlsx.utils.json_to_sheet(prod), "Producoes_Bibliograficas");
-
-    xlsx.writeFile(wb, `base_completa_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    await baixarXlsx(`base_completa_${new Date().toISOString().slice(0, 10)}.xlsx`, [
+      { nome: "Associadas", ...deRegistros(assoc) },
+      { nome: "Vinculos_Docentes", ...deRegistros(vinc) },
+      { nome: "Producoes_Bibliograficas", ...deRegistros(prod) },
+    ]);
   } catch {
     alert("Erro ao exportar base completa");
   }
@@ -578,12 +572,16 @@ const TABS = [
   { id: "notas", label: "Notas" },
 ];
 
+/**
+ * Busca e correção registro a registro, em todas as tabelas da base.
+ *
+ * É uma das abas de Dados, e não mais uma página própria: qualquer pessoa
+ * logada consulta e corrige, mas excluir continua sendo só de ADMIN — é o
+ * que <SoAdmin> guarda, mais acima.
+ */
 export const AdminCrud = () => {
-  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("associadas");
   const [exporting, setExporting] = useState(false);
-
-  if (user?.role !== "ADMIN") return null;
 
   const handleExportAll = async () => {
     setExporting(true);
@@ -592,13 +590,8 @@ export const AdminCrud = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      <AvisoDemonstracao contexto="As alterações feitas aqui gravam no banco de dados" />
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-serif italic text-[var(--text-main)]">Gestão de Dados</h2>
-          <p className="text-sm text-[var(--text-muted)]">CRUD completo em todas as tabelas do sistema.</p>
-        </div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-end">
         <button
           onClick={handleExportAll}
           disabled={exporting}

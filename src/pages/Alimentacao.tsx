@@ -3,11 +3,16 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { supabase } from "../lib/supabase";
 import { Plus, Trash2 } from "lucide-react";
 import { ProducaoForm } from "../components/ProducaoForm";
-import { BatchImportTab } from "../components/BatchImportTab";
-import { AvisoDemonstracao } from "../components/AvisoDemonstracao";
 
-export const Alimentacao = () => {
-  const [tab, setTab] = useState<"MANUAL" | "EXCEL" | "PRODUCAO" | "DOCS">("MANUAL");
+/**
+ * Cadastro de uma processualista (aba 1) ou de uma obra (aba 2) por vez.
+ *
+ * É uma das abas de Dados. A importação por planilha, que antes morava
+ * aqui numa terceira aba, saiu: lia o Excel no navegador com a lib xlsx do npm
+ * e escrevia direto nas tabelas sem conferir duplicata.
+ */
+export const CadastroIndividual = () => {
+  const [tab, setTab] = useState<"MANUAL" | "PRODUCAO">("MANUAL");
   const [camposExtras, setCamposExtras] = useState<any[]>([]);
 
   useEffect(() => {
@@ -66,57 +71,14 @@ export const Alimentacao = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-20">
-      <AvisoDemonstracao contexto="Os cadastros feitos aqui gravam no banco de dados" />
+    <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex space-x-1 border-b border-[var(--border)] overflow-x-auto whitespace-nowrap">
-        {(["MANUAL", "PRODUCAO", "EXCEL", "DOCS"] as const).map((t, i) => (
+        {(["MANUAL", "PRODUCAO"] as const).map((t, i) => (
           <button key={t} onClick={() => setTab(t)} className={`px-5 py-3 font-medium text-sm transition-colors ${tab === t ? "border-b-2 border-[var(--accent)] text-[var(--accent)]" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"}`}>
-            {["Aba 1 - Processualista (Base)", "Aba 2 - Produção Bibliográfica", "Importação em Lote", "Documentação da Base"][i]}
+            {["Aba 1 — Processualista", "Aba 2 — Produção bibliográfica"][i]}
           </button>
         ))}
       </div>
-
-      {tab === "EXCEL" && <div className="animate-in fade-in slide-in-from-bottom-4"><BatchImportTab /></div>}
-
-      {tab === "DOCS" && (
-        <div className="bg-white p-8 rounded-xl border border-[var(--border)] shadow-sm animate-in fade-in slide-in-from-bottom-4 space-y-8">
-          <div>
-            <h2 className="text-2xl font-serif italic text-[var(--accent)] mb-4">Estrutura da Base de Dados</h2>
-            <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-              Este sistema foi projetado para mapear a produção e o perfil das processualistas no Brasil.
-              Abaixo está o detalhamento de como os dados são organizados para facilitar a alimentação e a consulta.
-            </p>
-          </div>
-          <div className="space-y-6">
-            <div className="border-l-4 border-[var(--accent)] pl-4 py-2">
-              <h3 className="font-bold text-[var(--text-main)]">1. Tabela de Processualistas (Base)</h3>
-              <p className="text-xs text-[var(--text-muted)] mt-1">É o cadastro central. Cada registro representa uma pessoa única.</p>
-              <ul className="mt-4 space-y-3">
-                <li className="text-xs"><strong>Campos de Identificação:</strong> Nome completo, Email, UF de atuação principal e Atuação Profissional.</li>
-                <li className="text-xs"><strong>Titulação:</strong> Mapeia Mestrado, Doutorado e Livre-Docência.</li>
-                <li className="text-xs"><strong>Vínculos Docentes:</strong> Mapeia as instituições onde a profissional leciona.</li>
-                <li className="text-xs"><strong>Ranking 40+:</strong> Para cada instituição cadastrada, marcar se ela integra o ranking das 40 melhores do Brasil.</li>
-              </ul>
-            </div>
-            <div className="border-l-4 border-emerald-600 pl-4 py-2">
-              <h3 className="font-bold text-[var(--text-main)]">2. Produção Bibliográfica</h3>
-              <p className="text-xs text-[var(--text-muted)] mt-1">Armazena as obras publicadas (Pós-2015). Uma processualista pode ter múltiplas produções.</p>
-            </div>
-            <div className="border-l-4 border-amber-600 pl-4 py-2">
-              <h3 className="font-bold text-[var(--text-main)]">3. Tabelas Customizadas e Campos Extras</h3>
-              <p className="text-xs text-[var(--text-muted)] mt-1">Administradores podem criar novas tabelas ou adicionar campos ao cadastro principal sem mexer no código.</p>
-            </div>
-          </div>
-          <div className="bg-[var(--bg)] p-6 rounded-lg border border-[var(--border)]">
-            <h4 className="font-bold text-sm mb-2">Boas Práticas de Preenchimento</h4>
-            <ul className="text-xs space-y-2 text-[var(--text-muted)] list-disc pl-4">
-              <li>Sempre confira se a processualista já existe antes de cadastrar (use a busca na Listagem).</li>
-              <li>Ao importar via Excel, certifique-se de que os nomes estão idênticos nas duas abas para o vínculo automático.</li>
-              <li>Mantenha os links (Lattes, Teses) sempre com o prefixo https://.</li>
-            </ul>
-          </div>
-        </div>
-      )}
 
       {tab === "MANUAL" && (
         <div className="bg-white p-8 rounded-xl border border-[var(--border)] shadow-sm">

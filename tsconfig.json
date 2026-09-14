@@ -26,6 +26,12 @@
   "exclude": [
     "node_modules",
     "dist",
-    "supabase/functions"
+    "supabase/functions",
+    // arquitetura Express + Prisma fora de uso (veja o aviso no README);
+    // era o ultimo lugar que importava a lib xlsx, removida do projeto
+    "src/server",
+    "server.ts",
+    "seed.ts",
+    "scripts"
   ]
 }

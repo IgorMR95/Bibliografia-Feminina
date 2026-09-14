@@ -1,14 +1,18 @@
 /**
  * Edge Function: import-planilha
  *
- * Unico caminho pelo qual a base pode ser substituida por uma planilha.
- * O browser NAO alcanca `substituir_base_completa` diretamente — o EXECUTE
- * dela e' revogado de anon/authenticated. Aqui validamos que quem chama e'
- * um ADMIN de verdade e so entao usamos a service_role.
+ * Unico caminho pelo qual uma planilha alimenta a base. O browser NAO
+ * alcanca `mesclar_base` diretamente — o EXECUTE dela e' revogado de
+ * anon/authenticated. Aqui validamos que quem chama e' um ADMIN de
+ * verdade e so entao usamos a service_role.
+ *
+ * A regra da mesclagem esta na migracao 20260914160000: a planilha manda
+ * nas pessoas que ela contem e e' silenciosa sobre as demais, a menos que
+ * venha `remover_ausentes=true`.
  *
  * Rotas (via ?action=):
  *   preview   POST multipart  -> le a planilha e devolve o que mudaria (nao escreve)
- *   aplicar   POST multipart  -> substitui a base, guardando snapshot para rollback
+ *   aplicar   POST multipart  -> grava, guardando snapshot para rollback
  *   historico GET             -> ultimas importacoes
  *   reverter  POST json {id}  -> restaura o snapshot de uma importacao
  */
@@ -214,13 +218,19 @@ Deno.serve(async (req) => {
     const hashBase = await sha256(buf);
     const forcar = form.get("confirmar_reducao") === "true";
 
+    // Padrao e' NAO remover: a planilha manda nas pessoas que ela contem
+    // e e' silenciosa sobre as demais. Quem quiser a substituicao integral
+    // marca a caixa na tela, depois de ver na previa quem sairia.
+    const removerAusentes = form.get("remover_ausentes") === "true";
+
     // -------------------------------------------------------------
     // 4. delega a decisao final ao banco (transacional)
     // -------------------------------------------------------------
-    const { data, error } = await admin.rpc("substituir_base_completa", {
+    const { data, error } = await admin.rpc("mesclar_base", {
       p_associadas: todas,
       p_producoes: producoes,
       p_dry_run: action === "preview",
+      p_remover_ausentes: removerAusentes,
       p_arquivo_nome: file.name,
       p_arquivo_tamanho: file.size,
       p_arquivo_hash: forcar ? `FORCE:${hashBase}` : hashBase,

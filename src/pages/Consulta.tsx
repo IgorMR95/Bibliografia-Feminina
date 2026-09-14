@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Download } from "lucide-react";
-import * as xlsx from "xlsx";
+import { baixarXlsx, baixarCsv, deRegistros } from "../lib/xlsx";
 import { getAssociadas, getObras, Associada, Obra, semAcento } from "../lib/base";
 import { BuscaObras } from "../components/BuscaObras";
 
@@ -98,7 +98,7 @@ const BuscaPessoas = () => {
   const paginas = Math.ceil(filtradas.length / POR_PAGINA) || 1;
   const visiveis = filtradas.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA);
 
-  const exportar = (formato: "csv" | "xlsx") => {
+  const exportar = async (formato: "csv" | "xlsx") => {
     if (filtradas.length === 0) { alert("Nenhum dado para exportar"); return; }
     const linhas = filtradas.map((a) => ({
       Nome: a.nome,
@@ -119,20 +119,11 @@ const BuscaPessoas = () => {
       Lattes: a.lattes ?? "",
     }));
 
-    const ws = xlsx.utils.json_to_sheet(linhas);
+    const tabela = deRegistros(linhas);
     if (formato === "csv") {
-      const csv = xlsx.utils.sheet_to_csv(ws);
-      // BOM: sem ele o Excel abre os acentos errados
-      const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "processualistas.csv";
-      link.click();
-      URL.revokeObjectURL(link.href);
+      baixarCsv("processualistas.csv", tabela);
     } else {
-      const wb = xlsx.utils.book_new();
-      xlsx.utils.book_append_sheet(wb, ws, "Processualistas");
-      xlsx.writeFile(wb, "processualistas.xlsx");
+      await baixarXlsx("processualistas.xlsx", [{ nome: "Processualistas", ...tabela }]);
     }
   };
 

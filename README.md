@@ -37,7 +37,7 @@ npm run dev
 | `producoes_bibliograficas` | obras publicadas, ligadas à associada |
 | `vinculos_docentes` | instituições em que leciona (+ ranking 40+) |
 | `perfis` | espelha `auth.users`, com role `ADMIN` / `ANOTADOR` |
-| `importacoes` | histórico das substituições de base, com snapshot para rollback |
+| `importacoes` | histórico das importações de planilha, com snapshot para rollback |
 | `paginas` | texto (markdown) da Home, Sobre, Metodologia e Quem Somos |
 | `membros` | equipe do projeto, agrupada por `grupos_membros` |
 
@@ -45,8 +45,7 @@ npm run dev
 
 Home, Sobre, Metodologia e Quem Somos **não têm texto no código**: leem de `paginas`,
 e uma admin edita em **Administração → Textos do Site**, com prévia lado a lado. O que
-for publicado entra no site na próxima vez que os dados forem regerados (`npm run
-gerar-dados`) e enviados.
+for publicado aparece no site na hora.
 
 O markdown aceito é o mínimo necessário (`## título`, `**negrito**`, `*itálico*`,
 listas com `-`, `[link](url)`) e é renderizado por `src/lib/markdown.tsx`, que monta
@@ -60,20 +59,80 @@ Os números do levantamento original (481 processualistas mapeadas, 6.824 obras)
 **relato histórico da pesquisa** e seguem preservados no texto da Metodologia — não
 confundir com o tamanho da base consultável.
 
-## 📥 Substituir a base por uma planilha
+## 🔐 A área da equipe
 
-Admins têm, em **Administração → Substituir Base (Planilha)**, o fluxo completo:
+Duas entradas no menu, para quem está logada:
 
-1. envia o `.xlsx` (aba 1 = processualistas, aba 2 = bibliografia);
-2. **Analisar** roda um dry-run e mostra quantas serão atualizadas, criadas e removidas,
-   listando nominalmente quem sai — sem gravar nada;
-3. confirmar exige digitar `SUBSTITUIR`;
-4. antes de gravar, o banco guarda um snapshot completo do estado anterior, revertível
-   com um clique no histórico da mesma tela.
+**Dados** — tudo que alimenta e corrige a base, em três abas:
 
-O caminho é servido pela Edge Function `import-planilha`, que valida o JWT e exige role
-`ADMIN`. As funções `substituir_base_completa` e `reverter_importacao` têm `EXECUTE`
-revogado de `anon` e `authenticated` — o browser não as alcança diretamente.
+| Aba | Quem vê | O que faz |
+|---|---|---|
+| Cadastro individual | qualquer pessoa logada | uma processualista (aba 1) ou uma obra (aba 2) por vez |
+| Alimentação em lote | só ADMIN | envia um `.xlsx` e atualiza a base de uma vez |
+| Registros | qualquer pessoa logada | procura e corrige registro a registro; **excluir é só ADMIN** |
+
+**Administração** (só ADMIN) — quem entra e o que o visitante lê: usuários, textos das
+páginas e o histórico de alimentação.
+
+## 📥 Alimentação em lote
+
+A regra, que a tela repete antes de qualquer gravação:
+
+> A planilha manda nas pessoas que ela contém, e é silenciosa sobre as demais.
+
+- quem está na **aba 1** tem o cadastro atualizado pelo que a planilha diz;
+- quem está na **aba 2** tem a bibliografia substituída pela da planilha;
+- quem **não aparece** na planilha continua na base, intacta.
+
+É o escopo — e não uma comparação citação a citação, que erra em pontuação e acento —
+que impede duplicata: a bibliografia das pessoas presentes na aba 2 é apagada antes de
+reinserir. Reenviar o mesmo arquivo três vezes dá o mesmo resultado que enviar uma.
+
+Uma pessoa que está na aba 1 mas **não** na aba 2 mantém a bibliografia que já tinha.
+Sem essa ressalva, subir uma planilha só com a aba 1 — para corrigir um e-mail, digamos —
+apagaria a produção de todo mundo.
+
+### Substituir a base inteira
+
+Continua possível, como caso particular: marcar **"Remover quem não está na planilha"**.
+Deixou de ser o padrão. Quando marcada:
+
+1. a prévia lista, nome a nome, quem sairia;
+2. confirmar exige digitar `REMOVER`;
+3. se a planilha encolher a base em mais de 50%, o banco **recusa** e pede uma
+   confirmação a mais — é o caso clássico de arquivo errado;
+4. antes de gravar, o banco guarda um snapshot completo, revertível com um clique no
+   histórico da mesma tela.
+
+### Dissertações e teses não vão na aba 2
+
+São derivadas das colunas de titulação da aba 1 e recriadas ao fim de toda importação
+(`sincronizar_obras_de_titulacao()`). Sem isso, a etapa que reescreve a bibliografia
+levaria as 581 junto.
+
+### O modelo
+
+`public/modelo-planilha-bpf.xlsx`, oferecido na própria tela, sai de
+`node scripts/gerar-modelo.mjs`. Os nomes de coluna precisam bater exatamente com os de
+`supabase/functions/import-planilha/normalize.ts` — mudou lá, rode o gerador de novo.
+
+### Por onde passa
+
+Só pela Edge Function `import-planilha`, que valida o JWT e exige role `ADMIN`. As funções
+`mesclar_base`, `sincronizar_obras_de_titulacao` e `reverter_importacao` têm `EXECUTE`
+revogado de `anon` e `authenticated`: o browser não as alcança.
+
+> A função `bulk_import_processualistas`, de uma versão anterior, era `SECURITY DEFINER`
+> **com `EXECUTE` para `anon`** — e a chave anon vai no bundle público. Qualquer pessoa
+> na internet conseguia inserir registros chamando-a direto. Foi revogada e removida em
+> 14/09/2026, junto com a tela que a usava.
+
+### Nada de `xlsx` no navegador
+
+A lib `xlsx` do npm parou na 0.18.5, que tem CVE-2023-30533 e CVE-2024-22363. Ela saiu
+do projeto: a **leitura** é o parser próprio da Edge Function
+(`supabase/functions/import-planilha/xlsx.ts`) e a **escrita** é `src/lib/xlsx.ts`, um zip
+de XMLs em ~200 linhas. Tirou 431 KB do bundle público (1.493 → 1.062 KB).
 
 Para publicar mudanças no schema ou na função:
 
