@@ -1,8 +1,8 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/AuthContext";
 import {
-  Search, LayoutDashboard, Shield, LogOut, Users, LogIn,
-  Home as HomeIcon, BookMarked, Menu, X, FlaskConical,
+  Search, LayoutDashboard, Database, Shield, LogOut, Users, LogIn,
+  Home as HomeIcon, BookMarked, Menu, X, TableProperties, FlaskConical,
 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { useState } from "react";
@@ -29,9 +29,11 @@ export const Layout = () => {
   const [menuAberto, setMenuAberto] = useState(false);
 
   const restrito = [
+    ...(user ? [{ name: "Alimentação", href: "/alimentacao", icon: Database }] : []),
     ...(user?.role === "ADMIN"
       ? [
           { name: "Administração", href: "/admin", icon: Shield },
+          { name: "Dados", href: "/admin/dados", icon: TableProperties },
         ]
       : []),
   ];
