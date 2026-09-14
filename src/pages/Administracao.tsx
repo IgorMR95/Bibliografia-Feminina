@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { callEdgeFunction } from "../lib/supabase";
 import { useAuth } from "../lib/AuthContext";
-import { UserPlus, Clock } from "lucide-react";
+import { UserPlus, Clock, X } from "lucide-react";
 import { EditorConteudo } from "../components/EditorConteudo";
 
 /**
@@ -29,6 +29,7 @@ export const Administracao = () => {
   const { user } = useAuth();
 
   const [showModal, setShowModal] = useState(false);
+  const [salvando, setSalvando] = useState(false);
   const [isEditing, setIsEditing] = useState<any>(null);
   const [formData, setFormData] = useState({ nome: "", email: "", senha: "", role: "ANOTADOR" });
 
@@ -48,6 +49,17 @@ export const Administracao = () => {
   };
 
   useEffect(() => { loadData(); }, []);
+
+  // Esc fecha o modal — é o reflexo de quem usa teclado, e sem isso a
+  // única saída é acertar o botão
+  useEffect(() => {
+    if (!showModal) return;
+    const aoTeclar = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !salvando) setShowModal(false);
+    };
+    window.addEventListener("keydown", aoTeclar);
+    return () => window.removeEventListener("keydown", aoTeclar);
+  }, [showModal, salvando]);
 
   if (user?.role !== "ADMIN") return null;
 
@@ -73,9 +85,13 @@ export const Administracao = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (salvando) return;
+    setSalvando(true);
     try {
       if (isEditing) {
-        await callEdgeFunction("admin-users", "PUT", formData, isEditing.id);
+        // senha em branco na edição significa "não mexer na senha"
+        const { senha, ...resto } = formData;
+        await callEdgeFunction("admin-users", "PUT", senha ? formData : resto, isEditing.id);
       } else {
         await callEdgeFunction("admin-users", "POST", formData);
       }
@@ -83,6 +99,8 @@ export const Administracao = () => {
       loadData();
     } catch (err: any) {
       alert(err.message || "Erro ao salvar usuário. Email pode já estar em uso.");
+    } finally {
+      setSalvando(false);
     }
   };
 
@@ -186,6 +204,114 @@ export const Administracao = () => {
         </div>
       )}
 
+      {/*
+        Este formulário sumiu por engano num refactor de 26/08: a área
+        privada estava sendo podada do que gravava sem chegar ao site
+        público, e o modal foi junto — embora gestão de acesso nada tenha
+        a ver com isso. `showModal`, `openNew` e `handleSave` ficaram no
+        arquivo sem nada que os renderizasse, então "Novo Usuário" não
+        abria nada e não dava erro.
+      */}
+      {showModal && (
+        <div
+          className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+          onClick={() => !salvando && setShowModal(false)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden border border-[var(--border)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-6 py-4 border-b border-[var(--border)] flex justify-between items-center bg-[var(--nav-hover)]">
+              <h3 className="font-bold text-[var(--text-main)]">
+                {isEditing ? "Editar Usuário" : "Novo Usuário"}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="text-[var(--text-muted)] hover:text-[var(--text-main)] transition"
+                aria-label="Fechar"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSave} className="p-6 space-y-4">
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-[var(--text-muted)] mb-1">
+                  Nome completo
+                </label>
+                <input
+                  required autoFocus value={formData.nome}
+                  onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                  className="w-full px-3 py-2 border border-[var(--border)] rounded-lg outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-[var(--text-muted)] mb-1">
+                  E-mail
+                </label>
+                <input
+                  required type="email" value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full px-3 py-2 border border-[var(--border)] rounded-lg outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-[var(--text-muted)] mb-1">
+                  {isEditing ? "Nova senha" : "Senha inicial"}
+                </label>
+                {/*
+                  à mostra de propósito: quem cria precisa copiar a senha
+                  para passar à pessoa, e conferir o que digitou
+                */}
+                <input
+                  required={!isEditing} type="text" value={formData.senha}
+                  onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
+                  placeholder={isEditing ? "deixe em branco para não alterar" : ""}
+                  className="w-full px-3 py-2 border border-[var(--border)] rounded-lg outline-none focus:ring-1 focus:ring-[var(--accent)] font-mono text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-[var(--text-muted)] mb-1">
+                  Nível de permissão
+                </label>
+                <select
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  className="w-full px-3 py-2 border border-[var(--border)] rounded-lg outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                >
+                  <option value="ANOTADOR">Anotadora</option>
+                  <option value="ADMIN">Administradora</option>
+                </select>
+                <p className="text-[11px] text-[var(--text-muted)] mt-2 leading-relaxed">
+                  A <strong>anotadora</strong> cadastra e corrige registros em Dados. A{" "}
+                  <strong>administradora</strong> faz isso e mais: gerencia usuários, edita os
+                  textos do site, alimenta a base por planilha e exclui registros.
+                </p>
+              </div>
+
+              <div className="pt-4 flex space-x-3 justify-end">
+                <button
+                  type="button" disabled={salvando}
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 font-semibold text-[var(--text-main)] bg-white border border-[var(--border)] hover:bg-[var(--row-hover)] rounded-lg transition disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit" disabled={salvando}
+                  className="px-4 py-2 bg-[var(--accent)] text-white font-semibold rounded-lg hover:bg-[var(--accent-hover)] transition shadow-sm disabled:opacity-60"
+                >
+                  {salvando ? "Salvando…" : "Salvar"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
