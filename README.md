@@ -3,8 +3,9 @@
 Aplicação React (Vite) + Tailwind para consulta, dashboards e alimentação da base de
 processualistas brasileiras e sua produção bibliográfica.
 
-> ⚠️ **O site público lê arquivos estáticos, não o Supabase.** Veja "De onde vêm os
-> dados", no fim deste arquivo. O Supabase atende apenas o login e a área da equipe.
+> ⚠️ **O site público lê o Supabase.** Veja "De onde vêm os dados", no fim deste
+> arquivo. Existe também um modo estático, montado e mantido de pé — a troca entre
+> os dois é um arquivo só.
 >
 > Os arquivos `server.ts`, `src/server/`, `prisma/`, `seed.ts` e `scripts/import-excel.mjs`
 > são de uma arquitetura Express + Prisma que **não está mais em uso** e não roda em
@@ -142,51 +143,59 @@ npm start
 
 ## 🗂 De onde vêm os dados
 
-O lado **público** do site (consulta de pessoas, busca de obras, gráficos e
-páginas institucionais) **não consulta o Supabase**. Ele lê arquivos estáticos,
-servidos pela CDN da Vercel:
+O site inteiro — consulta de pessoas, busca de obras, gráficos e páginas
+institucionais — lê o **Supabase**. Uma única camada fala com o banco,
+`src/lib/base.ts`, e todas as telas passam por ela.
 
 ```
-dados/base-processualistas.xlsx     ← fonte da verdade, versionada aqui
-        │  npm run gerar-dados
+Supabase (PostgreSQL)
+        │  associadas · vinculos_docentes · producoes_bibliograficas
+        │  paginas · membros · grupos_membros · get_dashboard_stats()
         ▼
-public/dados/associadas.json        383 processualistas  ·  66 KB comprimido
-public/dados/obras.json             6.823 obras          ·  441 KB (sob demanda)
-public/dados/estatisticas.json      agregados prontos    ·  1 KB
-public/dados/conteudo.json          textos e equipe      ·  6 KB
+src/lib/base.ts        →  Consulta · Obras · Dashboards · Ficha · páginas
 ```
 
-Para atualizar a base: substitua o `.xlsx`, rode `npm run gerar-dados`, confira o
-resumo impresso e faça commit. A Vercel publica em cerca de um minuto.
+Para atualizar a base, use **Importar planilha** na área da equipe: a Edge Function
+valida o `.xlsx` e reescreve as tabelas. O site reflete na hora, sem novo deploy.
 
-**Por que não ler o `.xlsx` direto no navegador:** medido nesta base, o Excel
-custa 780 KB e ~150 ms de processamento (descompactar o zip e varrer 44 mil
-células de XML) contra 475 KB e ~30 ms do JSON. O `.xlsx` já é um zip, então
-ainda por cima não comprime de novo na rede.
+Medido nesta base, com gzip: as 383 pessoas descem em ~1 s e as 7.404 obras (1,2 MB
+comprimidos) em ~2 s. Os gráficos não baixam nada — quem soma é o banco.
 
-Os três arquivos são carregados sob demanda: quem abre a consulta de pessoas
-baixa 66 KB — a bibliografia só desce ao abrir a aba **Obras**.
+**Duas coisas que o banco exige e o arquivo estático não exigia:**
 
-### O que continua no Supabase
+- O PostgREST corta toda resposta em **1.000 linhas**. A bibliografia passa de sete
+  mil, então `todasAsPaginas()` conta primeiro (requisição `HEAD`) e pede todas as
+  faixas **em paralelo**. Em fila, as mesmas oito páginas levavam ~8 s.
+- Os **filtros dos gráficos vão para o banco** (`getEstatisticasFiltradas` chama
+  `get_dashboard_stats` com os filtros). Recontar no navegador exigiria baixar as
+  7.404 obras a cada toque num filtro.
 
-Só o que precisa de servidor: **login** e a **área da equipe** (editor de textos
-das páginas, gestão da equipe, importação de planilha). A estrutura do banco
-segue intacta e alimentada — nada foi apagado —, apenas deixou de ser consultada
-pelo site público.
+### O modo estático, se precisar voltar
 
-O editor de textos grava no Supabase; o que ele publica aparece no site quando os
-dados forem regerados e enviados, no mesmo ciclo da planilha.
+O site já foi servido por JSON na CDN, e essa via continua inteira:
+`scripts/gerar-dados.mjs` (gerador), `public/dados/*.json` (saída),
+`src/lib/estatisticas.ts` (agregados no navegador) e o workflow
+`.github/workflows/gerar-dados.yml`.
+
+Trocar de modo é reescrever **só `src/lib/base.ts`**: a interface pública
+(`getAssociadas`, `getObras`, `getEstatisticas`, `getConteudo`, `getAssociada`,
+`getObrasDe`) é idêntica nos dois, e nenhuma tela sabe de onde vem o dado.
+
+No modo estático a URL da ficha era legível (`/consulta/ada-pellegrini-grinover`);
+no banco o id é o UUID. Os links antigos continuam abrindo: `getAssociada` indexa
+também pelo apelido gerado a partir do nome, com a mesma regra do gerador.
 
 ### Dissertações e teses na busca
 
-A aba 1 da planilha já descreve os trabalhos de titulação (título, ano, faculdade,
-área e link). Eles **não são digitados de novo** na aba de bibliografia: o gerador os
-deriva de lá e cria as entradas correspondentes — *Dissertação de Mestrado*, *Tese de
-Doutorado* e *Tese de Livre-Docência* —, somando 581 obras às 6.823 da aba 2.
+A aba 1 da planilha descreve os trabalhos de titulação (título, ano, faculdade, área
+e link), e eles **não são digitados de novo** na aba de bibliografia. As 581 entradas
+correspondentes — *Dissertação de Mestrado*, *Tese de Doutorado* e *Tese de
+Livre-Docência* — vivem na mesma tabela das demais obras, com `tipo_obra` próprio
+(migração `20260914120000_teses_como_obras.sql`, idempotente).
 
 Repetir o dado nas duas abas criaria duas versões do mesmo trabalho, que divergem na
 primeira correção feita só de um lado.
 
-As contagens das **estatísticas continuam somando apenas a aba 2** (6.823): a
-metodologia do grupo trata a produção bibliográfica em separado dos trabalhos de
-titulação, e misturar as duas mudaria um número já publicado.
+Por isso o total de obras é **7.404** = 6.823 da bibliografia + 581 de titulação. Os
+cartões de mestrado, doutorado e livre-docência são recortes desse total, não uma
+soma à parte.

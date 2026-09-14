@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { getEstatisticas, getAssociadas, getObras } from "../lib/base";
-import { aplicarFiltros, calcular, temFiltro } from "../lib/estatisticas";
+import { getEstatisticas, getEstatisticasFiltradas } from "../lib/base";
+import { temFiltro } from "../lib/estatisticas";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, AreaChart, Area, LabelList,
@@ -138,9 +138,10 @@ export const Dashboards = () => {
   };
 
   /**
-   * Sem filtro, usa o arquivo de estatísticas já somado (1 KB). Só quando
-   * alguém filtra é que vale baixar a base inteira e recalcular no
-   * navegador — assim a página abre instantânea no caso comum.
+   * Quem soma é o banco, com ou sem filtro: get_dashboard_stats aceita os
+   * mesmos filtros da tela e devolve os totais prontos. Baixar as 7.404
+   * obras para recontar no navegador custaria segundos a cada toque num
+   * filtro.
    */
   const loadStats = async () => {
     setLoading(true);
@@ -152,8 +153,7 @@ export const Dashboards = () => {
           (est.por_uf ?? []).map((u: any) => String(u.label)).sort()
         );
       } else {
-        const [associadas, obras] = await Promise.all([getAssociadas(), getObras()]);
-        setData(calcular(aplicarFiltros(associadas, filters), obras));
+        setData(await getEstatisticasFiltradas(filters));
       }
     } catch {
       alert("Erro ao carregar estatísticas");

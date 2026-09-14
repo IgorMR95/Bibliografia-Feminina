@@ -1,11 +1,13 @@
 import { Associada, Obra, Estatisticas, Contagem } from "./base";
 
 /**
- * Recalcula os agregados no navegador quando há filtro ativo.
+ * Recalcula os agregados no navegador — espelho em JavaScript da função
+ * get_dashboard_stats.
  *
- * Sem filtro a página usa estatisticas.json, que já vem pronto e pesa 1 KB.
- * Só quando alguém filtra é que vale a pena baixar a base e somar aqui —
- * espelha o que a função get_dashboard_stats fazia no banco.
+ * Com a base vindo do Supabase, quem usa isso é só temFiltro: os totais
+ * filtrados agora são somados no banco (getEstatisticasFiltradas). O resto
+ * fica de pé porque é do que a versão estática precisa, quando não há banco
+ * para somar nada — é o par de scripts/gerar-dados.mjs.
  */
 
 export interface Filtros {
